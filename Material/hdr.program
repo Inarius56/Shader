@@ -1,0 +1,49 @@
+//VS Program
+vertex_program HDR/StandardVS hlsl
+{
+	source hdr.hlsl
+	entry_point hdrStandardVS
+	target vs_3_0
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+//PS Program
+fragment_program HDR/Downscale2x2LuminanceFp hlsl
+{
+	source hdr.hlsl
+	entry_point downscale2x2luminance
+	target ps_3_0 
+}
+fragment_program HDR/Downscale3x3 hlsl
+{
+	source hdr.hlsl
+	entry_point downscale3x3
+	target ps_3_0
+}
+fragment_program HDR/Downscale4x4 hlsl
+{
+	source hdr.hlsl
+	entry_point downscale4x4
+	target ps_3_0
+}
+fragment_program HDR/Downscale3x3brightpassFp hlsl
+{
+	source hdr.hlsl
+	entry_point downscale3x3brightpass
+	target ps_3_0
+}
+fragment_program HDR/Bloomfp hlsl
+{
+	source hdr.hlsl
+	entry_point bloom
+	target ps_3_0
+}
+fragment_program HDR/FinaltonemappingFp hlsl
+{
+	source hdr.hlsl
+	entry_point finalToneMapping
+	target ps_3_0
+}
+

@@ -1,0 +1,478 @@
+// Ogre overlay scripts
+Core/DebugOverlay
+{
+	zorder 500
+	// profile block
+	container BorderPanel(Core/ProfilePanel)
+	{
+		metrics_mode pixels
+		horz_align left
+		vert_align top
+		left 5 
+		//top 500
+		width 480
+		height 200
+		material Core/StatsBlockCenter
+        	border_size 1 1 1 1
+        	border_material Core/StatsBlockBorder
+        	border_topleft_uv     0.0000 1.0000 0.0039 0.9961
+	    	border_top_uv         0.0039 1.0000 0.9961 0.9961
+	    	border_topright_uv    0.9961 1.0000 1.0000 0.9961
+	    	border_left_uv        0.0000 0.9961 0.0039 0.0039
+	    	border_right_uv       0.9961 0.9961 1.0000 0.0039
+	    	border_bottomleft_uv  0.0000 0.0039 0.0039 0.0000
+        	border_bottom_uv      0.0039 0.0039 0.9961 0.0000
+	    	border_bottomright_uv 0.9961 0.0039 1.0000 0.0000
+		    
+		element TextArea(Core/FuntionTime)
+		{
+			metrics_mode pixels
+			left 5
+			top 5
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 19
+			caption FuntionTime
+			colour_top 1 1 0.7
+			colour_bottom 1 1 0.7
+		}
+		element TextArea(Core/FuncProfileCol)
+		{
+			metrics_mode pixels
+			left 5
+			top 10
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+
+	}
+
+
+	// Stats block
+	container BorderPanel(Core/StatPanel)
+	{
+		metrics_mode pixels
+		vert_align bottom
+		left 5 
+		top -300
+		width 480
+		height 300
+		material Core/StatsBlockCenter
+        	border_size 1 1 1 1
+        	border_material Core/StatsBlockBorder
+        	border_topleft_uv     0.0000 1.0000 0.0039 0.9961
+	    	border_top_uv         0.0039 1.0000 0.9961 0.9961
+	    	border_topright_uv    0.9961 1.0000 1.0000 0.9961
+	    	border_left_uv        0.0000 0.9961 0.0039 0.0039
+	    	border_right_uv       0.9961 0.9961 1.0000 0.0039
+	    	border_bottomleft_uv  0.0000 0.0039 0.0039 0.0000
+        	border_bottom_uv      0.0039 0.0039 0.9961 0.0000
+	    	border_bottomright_uv 0.9961 0.0039 1.0000 0.0000
+
+		container Panel(Core/BreakPanel)
+		{
+			metrics_mode pixels
+			left 5 
+			top 22
+			width 210
+			height 1
+			material Core/StatsBreak
+		}
+		    
+		element TextArea(Core/CurrFps)
+		{
+			metrics_mode pixels
+			left 5
+			top 5
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 19
+			caption Current FPS:
+			colour_top 1 1 0.7
+			colour_bottom 1 1 0.7
+		}
+		element TextArea(Core/AllCurBatches)
+		{
+			metrics_mode pixels
+			left 5
+			top 25
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/AverageFps)
+		{
+			metrics_mode pixels
+			left 5
+			top 40
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			caption AVERAGE FPS:
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/NumTris)
+		{
+			metrics_mode pixels
+			left 5
+			top 55
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			caption Triangle Count:
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/NumBatches)
+		{
+			metrics_mode pixels
+			left 5
+			top 70
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			caption Batch Count:
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/AllNumTris)
+		{
+			metrics_mode pixels
+			left 5
+			top 85
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/AllNumBatches)
+		{
+			metrics_mode pixels
+			left 5
+			top 100
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/MeshCount)
+		{
+			metrics_mode pixels
+			left 5
+			top 115
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/MeshMemoryUsage)
+		{
+			metrics_mode pixels
+			left 5
+			top 130
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/TextureCount)
+		{
+			metrics_mode pixels
+			left 5
+			top 145
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/TexMemoryUsage)
+		{
+			metrics_mode pixels
+			left 5
+			top 160
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/AvailableTextureMemory)
+		{
+			metrics_mode pixels
+			left 5
+			top 175
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/TotalMemory)
+		{
+			metrics_mode pixels
+			left 5
+			top 190
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/AvailMemory)
+		{
+			metrics_mode pixels
+			left 5
+			top 205
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/SkeletonCount)
+		{
+			metrics_mode pixels
+			left 5
+			top 220
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/SkeletonMemoryUsage)
+		{
+			metrics_mode pixels
+			left 5
+			top 235
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/RenderOneFrame)
+		{
+			metrics_mode pixels
+			left 250
+			top 5
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/EffectManagerUpdate)
+		{
+			metrics_mode pixels
+			left 250
+			top 20
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/LogicModelManagerUpdate)
+		{
+			metrics_mode pixels
+			left 250
+			top 35
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/RenderTargetSize)
+		{
+			metrics_mode pixels
+			left 250
+			top 50
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/ColorDepth)
+		{
+			metrics_mode pixels
+			left 250
+			top 65
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/FSAA)
+		{
+			metrics_mode pixels
+			left 250
+			top 80
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/CameraClip)
+		{
+			metrics_mode pixels
+			left 250
+			top 95
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/LightNum)
+		{
+			metrics_mode pixels
+			left 250
+			top 110
+			width 110
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/LogicModelNum)
+		{
+			metrics_mode pixels
+			left 250
+			top 125
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/ParticleSystemNum)
+		{
+			metrics_mode pixels
+			left 250
+			top 140
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/ModelNum)
+		{
+			metrics_mode pixels
+			left 250
+			top 155
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(Core/StaticEntityNum)
+		{
+			metrics_mode pixels
+			left 250
+			top 170
+			width 90
+			height 30
+			font_name TrebuchetMSBold
+			char_height 16
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+	}
+	container Panel(Core/LogoPanel)
+	{	
+		metrics_mode pixels
+		horz_align right
+		vert_align bottom
+		top -75
+		left -165
+		width 150
+		height 75
+		material Core/OgreText
+	}
+	
+}
+
+// A silly example of how you would do a 3D cockpit
+//Examples/KnotCockpit
+//{
+//	zorder 100
+//	entity knot.mesh(hudKnot)
+//	{
+//		position 0 0 -50
+//		rotation 0 0 0 0
+//	}
+//
+//}
+
+Core/UIBlack
+{
+	zorder 400
+	// Stats block
+	container Panel(Core/TopBlackPanel)
+	{
+		metrics_mode pixels
+		horz_align left
+		vert_align top				
+		width 2000
+		height 120
+		material Core/UIBlack
+	}
+	container Panel(Core/BottomBlackPanel)
+	{
+		metrics_mode pixels
+		horz_align left
+		vert_align bottom
+		top -120				
+		width 2000
+		height 120
+		material Core/UIBlack
+	}
+
+}

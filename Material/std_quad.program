@@ -1,0 +1,135 @@
+vertex_program PostFilters/std_quad_vs hlsl
+{
+	source std_quad.hlsl
+	entry_point std_quad_vs
+	target vs_2_0
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+vertex_program PostFilters/std_quad_vs_3_0 hlsl
+{
+	source std_quad.hlsl
+	entry_point std_quad_vs_3_0
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program CopyFrame hlsl
+{
+    source CopyFrameBuffer.hlsl
+    entry_point copy_frame
+    target ps_3_0
+}
+
+fragment_program ConvertToLinearSpace hlsl
+{
+    source CopyFrameBuffer.hlsl
+    entry_point ConvertToLinearSpace
+    target ps_3_0
+}
+
+fragment_program FinalConvertToGammaSpace hlsl
+{
+    source CopyFrameBuffer.hlsl
+    entry_point FinalConvertToGammaSpace
+    target ps_3_0
+}
+
+material FrameCopy
+{
+  technique
+    {
+        pass
+        {
+            lighting off
+            depth_write off
+            depth_check off
+            cull_hardware none
+
+            vertex_program_ref PostFilters/std_quad_vs_3_0
+            {
+            }
+
+            fragment_program_ref CopyFrame
+            {
+            }
+
+            texture_unit
+            {
+								//texture_alias <baseTexture>
+                //texture <baseTexture>
+                tex_address_mode clamp
+                filtering linear linear none
+            }
+        }
+    }
+}
+
+material ConvertToLinearSpace
+{
+  technique
+    {
+        pass
+        {
+            lighting off
+            depth_write off
+            depth_check off
+            cull_hardware none
+
+            vertex_program_ref PostFilters/std_quad_vs_3_0
+            {
+            }
+
+            fragment_program_ref ConvertToLinearSpace
+            {
+            }
+
+            texture_unit
+            {
+								//texture_alias <baseTexture>
+                //texture <baseTexture>
+                tex_address_mode clamp
+                filtering linear linear none
+            }
+        }
+    }
+}
+
+material FinalConvertToGammaSpace
+{
+  technique
+    {
+        pass
+        {
+            lighting off
+            depth_write off
+            depth_check off
+            cull_hardware none
+
+            vertex_program_ref PostFilters/std_quad_vs_3_0
+            {
+            }
+
+            fragment_program_ref FinalConvertToGammaSpace
+            {
+            }
+
+            texture_unit
+            {
+								//texture_alias <baseTexture>
+                //texture <baseTexture>
+                tex_address_mode clamp
+                filtering linear linear none
+            }
+        }
+    }
+}
+

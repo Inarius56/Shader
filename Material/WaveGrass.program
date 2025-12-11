@@ -1,0 +1,92 @@
+vertex_program WaveGrass_VS hlsl
+{
+	source WaveGrass.hlsl
+	entry_point mainVS
+	target vs_3_0
+	preprocessor_defines USE_RANDOM_TEX=0;USE_ANIMATION=1
+	default_params
+	{
+		param_named_auto WorldViewProj worldviewproj_matrix
+		param_named_auto World world_matrix
+		param_named_auto WorldView worldview_matrix  
+		param_named_auto LightAmbient ambient_light_colour
+		param_named_auto LightDiffuse light_diffuse_colour 0
+		param_named_auto LightSpecular light_specular_colour 0
+		param_named_auto LightDir light_position_view_space 0
+		param_named_auto Shininess surface_shininess
+		param_named_auto MaterialAmbient surface_ambient_colour 
+		param_named_auto MaterialDiffuse surface_diffuse_colour
+		param_named_auto MaterialSpecular surface_specular_colour 
+		param_named offset float4 0 0 0 0
+		param_named interactivePos float4 0 0 0 0
+		param_named propertyParam float4 0 0 0 0  
+	}
+}
+
+vertex_program WaveGrass_RandomTex_VS hlsl
+{
+	source WaveGrass.hlsl
+	entry_point mainVS
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_RANDOM_TEX=1;USE_ANIMATION=1
+	default_params
+	{
+		param_named_auto WorldViewProj worldviewproj_matrix
+		param_named_auto World world_matrix
+		param_named_auto WorldView worldview_matrix  
+		param_named_auto LightAmbient ambient_light_colour
+		param_named_auto LightDiffuse light_diffuse_colour 0
+		param_named_auto LightSpecular light_specular_colour 0
+		param_named_auto LightDir light_position_view_space 0
+		param_named_auto Shininess surface_shininess
+		param_named_auto MaterialAmbient surface_ambient_colour 
+		param_named_auto MaterialDiffuse surface_diffuse_colour
+		param_named_auto MaterialSpecular surface_specular_colour 
+		param_named interactivePos float4 0 0 0 0
+		param_named propertyParam float4 0 0 0 0
+		param_named_auto time time 1
+		param_named windControl float4 1 1 6 1
+		param_named windControl2 float2 1 10
+		param_named waveControl float3 10 0.07 1
+		param_named windDirMatrixParam float4 1 1 1 1
+		param_named waveSize float2 6400 6400
+	}
+}
+
+vertex_program WaveGrass_NoAnim_VS hlsl
+{
+	source WaveGrass.hlsl
+	entry_point mainVS
+	target vs_3_0
+	preprocessor_defines USE_RANDOM_TEX=0;USE_ANIMATION=0
+	default_params
+	{
+		param_named_auto WorldViewProj worldviewproj_matrix
+		param_named_auto WorldView worldview_matrix  
+		param_named_auto LightAmbient ambient_light_colour
+		param_named_auto LightDiffuse light_diffuse_colour 0
+		param_named_auto LightSpecular light_specular_colour 0
+		param_named_auto LightDir light_position_view_space 0
+		param_named_auto Shininess surface_shininess
+		param_named_auto MaterialAmbient surface_ambient_colour 
+		param_named_auto MaterialDiffuse surface_diffuse_colour
+		param_named_auto MaterialSpecular surface_specular_colour 
+	}
+}
+
+// none
+fragment_program WaveGrass_PS hlsl
+{
+	source WaveGrass.hlsl
+	entry_point mainPS
+	target ps_3_0
+	default_params
+	{
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto fog_type fog_type
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+

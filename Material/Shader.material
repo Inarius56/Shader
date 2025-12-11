@@ -1,0 +1,5191 @@
+//---------------------------    Anti-Aliasing Materials     -----------------------//
+
+//////////////////////////////////////////////////////////////////////////////////////
+//																																									//
+//																			M.L.A.A.																		//
+//															Morphological Anti-Aliasing													//
+//////////////////////////////////////////////////////////////////////////////////////
+
+vertex_program PostFilter/AntiAliasing/vp_MLAA_VS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point MLAA_VS
+	target vs_3_0
+	
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_MLAA_EdgeDetectionLuminancePS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point MLAA_EdgeDetectionLuminancePS
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_MLAA_EdgeDetectionDepthPS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point MLAA_EdgeDetectionDepthPS
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_MLAA_BlendingWeightCalculationPS_LOD4 hlsl
+{
+	source AntiAlias.hlsl
+	entry_point MLAA_BlendingWeightCalculationPS
+	target ps_3_0
+	preprocessor_defines MAX_SEARCHSTEPS=16
+	
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_MLAA_BlendingWeightCalculationPS_LOD2 hlsl
+{
+	source AntiAlias.hlsl
+	entry_point MLAA_BlendingWeightCalculationPS
+	target ps_3_0
+	preprocessor_defines MAX_SEARCHSTEPS=8
+	
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_MLAA_BlendingWeightCalculationPS_LOD1 hlsl
+{
+	source AntiAlias.hlsl
+	entry_point MLAA_BlendingWeightCalculationPS
+	target ps_3_0
+	preprocessor_defines MAX_SEARCHSTEPS=4
+
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_MLAA_NeighbourhoodBlendingPS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point MLAA_NeighbourhoodBlendingPS
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+
+material PostFilter/AntiAliasing/MLAA/EdgeDetectionLuminance
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_MLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_MLAA_EdgeDetectionLuminancePS
+			{
+			}
+			
+			texture_unit
+			{
+				// colorTex
+				texture <scene>
+				tex_address_mode clamp
+				filtering point point point
+			}
+		}
+	}
+}
+
+material PostFilter/AntiAliasing/MLAA/EdgeDetectionDepth
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write on
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_MLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_MLAA_EdgeDetectionDepthPS
+			{
+			}
+			
+			texture_unit
+			{
+				// depthTex之前渲染流程中产生
+				texture <depthTex>
+				tex_address_mode clamp
+				filtering point point point
+			}
+		}
+	}
+}
+
+material PostFilter/AntiAliasing/MLAA/BlendingWeightCalculation
+{
+	technique
+	{
+		scheme SearchLOD4
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_MLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_MLAA_BlendingWeightCalculationPS_LOD4
+			{
+			}
+			
+			texture_unit
+			{
+				//Target 0: edgesTex
+				texture <edgesTex>
+				tex_address_mode clamp
+				filtering linear linear point
+			}
+
+			texture_unit
+			{
+				//areaTex
+				texture AreaMap.bmp
+				tex_address_mode clamp
+				filtering point point point
+			}
+		}
+	}
+	
+	technique
+	{
+		scheme SearchLOD2
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_MLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_MLAA_BlendingWeightCalculationPS_LOD2
+			{
+			}
+			
+			texture_unit
+			{
+				//Target 0: edgesTex
+				texture <edgesTex>
+				tex_address_mode clamp
+				filtering linear linear point
+			}
+
+			texture_unit
+			{
+				//areaTex
+				texture AreaMap.bmp
+				tex_address_mode clamp
+				filtering point point point
+			}
+		}
+	}
+
+	technique
+	{
+		scheme SearchLOD1
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_MLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_MLAA_BlendingWeightCalculationPS_LOD1
+			{
+			}
+			
+			texture_unit
+			{
+				//Target 0: edgesTex
+				texture <edgesTex>
+				tex_address_mode clamp
+				filtering linear linear point
+			}
+
+			texture_unit
+			{
+				//areaTex
+				texture AreaMap.bmp
+				tex_address_mode clamp
+				filtering point point point
+			}
+		}
+	}
+	
+}
+
+material PostFilter/AntiAliasing/MLAA/NeighbourhoodBlending
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_MLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_MLAA_NeighbourhoodBlendingPS
+			{
+			}
+			
+			texture_unit
+			{
+				//colorTex
+				texture <scene>
+				tex_address_mode clamp
+				filtering linear linear point
+			}
+			
+			texture_unit
+			{
+				//Target 1: blendTex
+				texture <blendTex>
+				tex_address_mode clamp
+				filtering linear linear point
+			}
+		}
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//																																									//
+//																			D.L.A.A.																		//
+//												Directionally Localized Anti-Aliasing											//
+//////////////////////////////////////////////////////////////////////////////////////
+
+vertex_program PostFilter/AntiAliasing/vp_DLAA_VS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point DLAA_VS
+	target vs_3_0
+	
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_DLAA_EdgeDetectionPS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point DLAA_EdgeDetectionPS
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_DLAA_BlendingColorPS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point DLAA_BlendingColorPS
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto cTargetSize	viewport_size
+	}
+}
+
+material PostFilter/AntiAliasing/DLAA/EdgeDetection
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_DLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_DLAA_EdgeDetectionPS
+			{
+			}
+			
+			texture_unit
+			{
+				// original tex
+				texture <scene>
+				tex_address_mode clamp
+				filtering linear linear point
+			}
+		}
+	}
+}
+
+material PostFilter/AntiAliasing/DLAA/BlendingColor
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_DLAA_VS
+			{
+			}
+			fragment_program_ref PostFilter/AntiAliasing/fp_DLAA_BlendingColorPS
+			{
+			}
+			
+			texture_unit
+			{
+				// target
+				texture <target>
+				tex_address_mode clamp
+				filtering linear linear point
+			}
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//																																									//
+//																			FXAA      																	//
+//											    Fast Approximate Anti-Aliasing      										//
+//////////////////////////////////////////////////////////////////////////////////////
+
+vertex_program PostFilter/AntiAliasing/vp_FXAA_VS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point FXAA_VS
+	target vs_3_0
+	
+	default_params
+	{
+		param_named_auto  worldViewProj     worldviewproj_matrix
+		//param_named_auto  viewportSize      viewport_size
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_FXAA_PS hlsl
+{
+	source AntiAlias.hlsl
+	entry_point FXAA_PS
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto viewportSize    viewport_size
+	}
+}
+
+material PostFilter/AntiAliasing/FXAA
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			depth_check off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_FXAA_VS
+			{
+				
+			}	
+			
+			fragment_program_ref PostFilter/AntiAliasing/fp_FXAA_PS
+			{
+				
+			}
+			
+			texture_unit lumaScene
+			{
+				//filtering point point point
+			}
+		}		
+	}	
+}
+
+
+vertex_program PostFilter/AntiAliasing/vp_FXAA_luma hlsl
+{
+	source AntiAlias.hlsl
+	entry_point FXAA_VS_LUMA
+	target vs_3_0
+	
+	default_params
+	{
+		param_named_auto worldViewProj  worldviewproj_matrix
+	}
+}
+			
+fragment_program PostFilter/AntiAliasing/fp_FXAA_luma hlsl
+{
+	source AntiAlias.hlsl
+	entry_point FXAA_PS_LUMA
+	target ps_3_0
+	
+	default_params
+	{
+	}
+}
+			
+material PostFilter/AntiAliasing/FXAA_LUMA
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_FXAA_luma
+			{
+			
+			}
+			
+			fragment_program_ref PostFilter/AntiAliasing/fp_FXAA_luma
+			{
+			
+			}
+			
+			texture_unit scene
+			{
+				
+			}
+		}
+	}
+}
+
+vertex_program PostFilter/AntiAliasing/vp_FXAA_NOLUMA hlsl
+{
+	source AntiAlias.hlsl
+	entry_point FXAA_VS_NOLUMA
+	target vs_3_0
+	
+	default_params
+	{
+		param_named_auto worldViewProj  worldviewproj_matrix
+	}
+}
+
+fragment_program PostFilter/AntiAliasing/fp_FXAA_NOLUMA hlsl
+{
+	source AntiAlias.hlsl
+	entry_point FXAA_PS_NOLUMA
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto viewportSize viewport_size
+	}
+}
+
+material PostFilter/AntiAliasing/FXAA_NOLUMA
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			depth_check off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_FXAA_NOLUMA
+			{
+				
+			}	
+			
+			fragment_program_ref PostFilter/AntiAliasing/fp_FXAA_NOLUMA
+			{
+				
+			}
+			
+			texture_unit Scene
+			{
+				
+			}
+		}		
+	}	
+}
+
+fragment_program PostFilter/AntiAliasing/fp_FXAA_Quality hlsl
+{
+	source AntiAlias.hlsl
+	entry_point FXAA_PS_Quality
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto viewportSize viewport_size
+	}
+}
+
+material PostFilter/AntiAliasing/FXAA_Quality
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			depth_check off
+			
+			vertex_program_ref PostFilter/AntiAliasing/vp_FXAA_NOLUMA
+			{
+				
+			}	
+			
+			fragment_program_ref PostFilter/AntiAliasing/fp_FXAA_Quality
+			{
+				
+			}
+			
+			texture_unit Scene
+			{
+				
+			}
+		}		
+	}	
+}
+fragment_program PostFilters/Bloom/blur_fp hlsl
+{
+	source Bloom.hlsl
+	entry_point blur_fp
+	target ps_3_0
+}
+
+fragment_program PostFilters/Bloom/final_fp hlsl
+{
+	source Bloom.hlsl
+	entry_point final_fp
+	target ps_3_0
+}
+
+// Effect: Bloom
+
+material PostFilters/Bloom/Blur
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Bloom/blur_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+material PostFilters/Bloom/Final
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Bloom/final_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering none
+			}
+			texture_unit
+			{
+				texture <input1>
+				tex_address_mode clamp
+				filtering bilinear
+				tex_coord_set 1
+			}
+		}
+	}
+}
+
+
+/////////////////////////////////////////////////////////// ////////////////////////////////////////////////////////////////////////
+fragment_program Bloom/Downscale4x4brightpassFp hlsl
+{
+	source Bloom.hlsl
+	entry_point downscale4x4brightpass
+	target ps_3_0
+}
+fragment_program Bloom/FinaltonemappingFp hlsl
+{
+	source Bloom.hlsl
+	entry_point finalToneMapping
+	target ps_3_0
+}
+material Bloom/Downsample4x4Brightpass
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/Downscale4x4brightpassFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+			
+		}
+	}
+}
+material Bloom/GaussianBloom0
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref HDR/Bloomfp
+			{
+			}
+			// Input 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+material Bloom/GaussianBloom1
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref HDR/Bloomfp
+			{
+			}
+			// Input 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+material Bloom/ToneMapping
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/FinaltonemappingFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+			}
+			//Bloom
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+			
+		}
+	}
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////// ////////////////////////////////////////////////////////////////////////
+fragment_program Bloom/GrayDownScaleLumFp hlsl
+{
+	source Bloom.hlsl
+	entry_point GrayDownScaleLum
+	target ps_3_0
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+	}
+}
+
+fragment_program Bloom/Downscale3x3Fp hlsl
+{
+	source Bloom.hlsl
+	entry_point DownScale3x3
+	target ps_3_0
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+	}
+}
+
+material Bloom/GrayDownScaleLum
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/GrayDownScaleLumFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear none 
+			}
+			
+		}
+	}
+}
+
+material Bloom/Downscale3x3
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/Downscale3x3Fp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear none 
+			}
+			
+		}
+	}
+}
+
+
+fragment_program Bloom/DownsampleBrightpassFp hlsl
+{
+	source Bloom.hlsl
+	entry_point DownsampleBrightpassFp
+	target ps_3_0
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+		param_named threshold float4 0 0 0 0
+	}
+}
+fragment_program Bloom/DownsampleFp hlsl
+{
+	source Bloom.hlsl
+	entry_point DownsampleFp
+	target ps_3_0
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+	}
+}
+
+fragment_program Bloom/UpsampleFp hlsl
+{
+	source Bloom.hlsl
+	entry_point UpsampleFp
+	target ps_3_0
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+		param_named sampleScale float 0
+	}
+}
+
+
+fragment_program Bloom/GaussianBlurHFp hlsl
+{
+	source Bloom.hlsl
+	entry_point GaussianBlurHFp
+	target ps_3_0
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+		param_named fStrength float 1	
+		param_named offset float2 1 0
+	}
+}
+
+
+fragment_program Bloom/FinalPass_HDR_Fp hlsl
+{
+	source Bloom.hlsl
+	entry_point finalPassFp
+	target ps_3_0
+	preprocessor_defines USE_HDR=1;USE_AUTOEXPOSURE=0
+	default_params
+	{
+		param_named bloomColor float4 1 1 1 0
+		param_named exposure float 1
+	}
+}
+
+fragment_program Bloom/FinalPass_HDR_AutoExposure_Fp hlsl
+{
+	source Bloom.hlsl
+	entry_point finalPassFp
+	target ps_3_0
+	preprocessor_defines USE_HDR=1;USE_AUTOEXPOSURE=1
+	default_params
+	{
+		param_named bloomColor float4 1 1 1 0
+		param_named exposure float 1
+	}
+}
+
+fragment_program Bloom/FinalPassFp hlsl
+{
+	source Bloom.hlsl
+	entry_point finalPassFp
+	target ps_3_0
+	preprocessor_defines USE_HDR=0;USE_AUTOEXPOSURE=0
+	default_params
+	{
+		param_named bloomColor float4 1 1 1 0
+	}
+}
+material Bloom/DownsampleBrightpass
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/DownsampleBrightpassFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear none 
+			}
+			
+		}
+	}
+}
+
+material Bloom/Downsample
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/DownsampleFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear none 
+			}
+			
+		}
+	}
+}
+
+material Bloom/Upsample
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/UpsampleFp
+			{
+			}
+			// main tex
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear none 
+			}
+			// bloom tex
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear none 
+			}
+		}
+	}
+}
+
+material Bloom/GaussianBlurH
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/GaussianBlurHFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering linear linear none 
+			}
+			
+		}
+	}
+}
+
+
+fragment_program Bloom/FinalBloomFp hlsl
+{
+	source Bloom.hlsl
+	entry_point FinalBloom
+	target ps_3_0
+}
+
+material Bloom/FinalBloom
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/FinalBloomFp
+			{
+			}
+			//rt_final_brightpass
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+			}
+			//rt_xuan0
+			texture_unit
+			{
+				tex_address_mode clamp
+			}			
+		}
+	}
+}
+
+
+
+material Bloom/FinalPass_HDR
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/FinalPass_HDR_Fp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+			}
+			//Bloom
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+			//lut
+			//texture_unit
+			//{
+			//	texture bloomLUTtest_01.png
+			//	tex_address_mode clamp
+			//	filtering none
+			//}
+		}
+	}
+}
+
+
+material Bloom/FinalPass_HDR_AutoExposure
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/FinalPass_HDR_AutoExposure_Fp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+			}
+			//Bloom
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+			//lut
+			//texture_unit
+			//{
+			//	texture bloomLUTtest_01.png
+			//	tex_address_mode clamp
+			//	filtering none
+			//}
+			//Average Lum
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+
+material Bloom/FinalPass
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref Bloom/FinalPassFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+			}
+			//Bloom
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+			//lut
+			//texture_unit
+			//{
+			//	texture bloomLUTtest_01.png
+			//	tex_address_mode clamp
+			//	filtering none
+			//}
+		}
+	}
+}
+fragment_program PostFilters/ColorLUT_fp hlsl
+{
+	source ColorLUT.hlsl
+	entry_point colorLUT_fp
+	target ps_3_0
+}
+
+// Effect: ColorLUT
+
+material PostFilters/ColorLUT
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			
+			fragment_program_ref PostFilters/ColorLUT_fp
+			{
+			}
+			texture_unit 0
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering none
+			}
+			texture_unit 1
+			{
+				texture LUT_00.png
+				tex_address_mode clamp
+				filtering none
+			}
+
+		}
+	}
+}
+fragment_program PostFilters/Compositor/ColorMaskHLSL_fp hlsl
+{
+	source ColorMask.hlsl
+	entry_point psColorMask
+	target ps_3_0
+}
+
+material PostFilters/ColorMask
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/ColorMaskHLSL_fp
+			{				
+				param_named fAlpha float 0
+				param_named maskColor float4 0.0 0.0 0.0 0.0
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+
+// Effect: ColourControl
+
+fragment_program PostFilters/ColourControl/ColourControl_fp hlsl
+{
+	source ColourControl.hlsl
+	entry_point ColourControl_fp
+	target ps_3_0
+
+	default_params
+	{
+		param_named params float4 1.0 1.0 1.0 1.0
+	}
+}
+
+///////////////////////////////////
+//	colour control post material
+///////////////////////////////////
+
+material PostFilters/ColourControl/Saturation
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/ColourControl/ColourControl_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering none
+			}
+		}
+	}
+}
+
+
+
+fragment_program PostFilters/Compositor/ComplexBlurHLSL_fp hlsl
+{
+	source ComplexBlur.hlsl
+	entry_point psComplexBlur
+	target ps_3_0
+}
+
+material PostFilters/ComplexBlur
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/ComplexBlurHLSL_fp
+			{
+				param_named fDistance float 24
+				param_named fUnblured float 0.1
+				param_named fStrength float 0.05
+				
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+
+
+fragment_program DoF_Gaussian3x3FP hlsl
+{
+   source DepthOfField.hlsl
+   entry_point DoF_Gaussian3x3FP
+   target ps_3_0
+}
+
+fragment_program DoF_DepthOfFieldFP hlsl
+{
+   source DepthOfField.hlsl
+   entry_point DoF_DepthOfFieldFP
+   target ps_3_0
+   default_params               
+   {
+        param_named pixelSizeScene float 0.003
+        param_named pixelSizeBlur float 0.003
+        param_named dofParams float4 0.3 500 1000 0.3    
+   }
+}
+
+fragment_program DoF_DepthOfField_DSIntZ_FP hlsl
+{
+   source DepthOfField.hlsl
+   entry_point DoF_DepthOfFieldFP
+   target ps_3_0
+   preprocessor_defines USE_DSINTZ=1
+   default_params               
+   {
+        param_named_auto near_clip_distance near_clip_distance  
+        param_named_auto far_clip_distance far_clip_distance
+        param_named pixelSizeScene float 0.003
+        param_named pixelSizeBlur float 0.003
+        param_named dofParams float4 0.3 500 1000 0.3    
+   }
+}
+
+material PostFilters/DoF/Gaussian3x3
+{
+  technique
+  {
+    pass
+    {
+      vertex_program_ref PostFilters/std_quad_vs_3_0
+      {
+      }
+     
+      fragment_program_ref DoF_Gaussian3x3FP
+      {
+        param_named pixelSize float 0.003
+      }
+
+      texture_unit source
+      {
+        tex_address_mode clamp
+      }
+    }
+  }
+}
+
+material PostFilters/DoF/DepthOfField
+{
+  technique
+  {
+    pass
+    {
+      vertex_program_ref PostFilters/std_quad_vs_3_0
+      {
+      }
+     
+      fragment_program_ref DoF_DepthOfFieldFP
+      {
+      }
+
+      texture_unit scene
+      {
+        tex_address_mode clamp
+      }
+
+      texture_unit blur
+      {
+        tex_address_mode clamp
+      }
+      
+      texture_unit DepthTex
+      {
+        tex_address_mode clamp
+        content_type compositor SceneRender depth_buffer
+      }
+    }
+  }
+}
+
+material PostFilters/DoF/DepthOfField_DSIntZ
+{
+  technique
+  {
+    pass
+    {
+      vertex_program_ref PostFilters/std_quad_vs_3_0
+      {
+      }
+     
+      fragment_program_ref DoF_DepthOfField_DSIntZ_FP
+      {
+      }
+
+      texture_unit scene
+      {
+        tex_address_mode clamp
+      }
+
+      texture_unit blur
+      {
+        tex_address_mode clamp
+      }
+      
+      texture_unit DepthTex
+      {
+        tex_address_mode clamp
+        content_type dsintz
+      }
+    }
+  }
+}
+
+
+fragment_program PostFilters/Compositor/DrunkHLSL_fp hlsl
+{
+	source Drunk.hlsl
+	entry_point psDrunk
+	target ps_3_0
+}
+
+material PostFilters/Drunk
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/DrunkHLSL_fp
+			{
+				param_named_auto fTime time
+				param_named fStrength float 1
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit drunknoise
+			{
+				texture HeatHazeNoise_high.dds
+				tex_coord_set 0
+				tex_address_mode wrap
+				filtering none
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/Compositor/EnergyWaveMaskHLSL_fp hlsl
+{
+	source EnergyWaveMask.hlsl
+	entry_point psEnergyWaveMask
+	target ps_3_0
+}
+
+material PostFilters/EnergyWaveMask
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/EnergyWaveMaskHLSL_fp
+			{
+				param_named_auto fTime time
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit texMask
+			{
+				texture Energy_Wave_Mask
+				//texture 
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit
+			{
+				texture EnergyWaveMaskNoise_high.dds
+				tex_coord_set 0
+				tex_address_mode wrap
+				filtering bilinear
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/Fade_fp hlsl
+{
+	source Fade.hlsl
+	entry_point fade_fp
+	target ps_3_0
+
+	default_params
+	{
+		param_named colour_amount float 0
+		param_named gray_amount float 1
+	}
+}
+
+// Effect: Fade
+
+material PostFilters/Fade
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			
+			fragment_program_ref PostFilters/Fade_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering none
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/FadeColor_fp hlsl
+{
+	source FadeColor.hlsl
+	entry_point fadeColor_fp
+	target ps_3_0
+
+	default_params
+	{
+		param_named colour_amount float 0
+		param_named gray_amount float 1
+	}
+}
+
+// Effect: FadeColor
+
+material PostFilters/FadeColor
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/FadeColor_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering none
+			}
+		}
+	}
+}
+
+// Effect: Floodlighting
+
+vertex_program PostFilters/Floodlighting/down_sample_vp hlsl
+{
+	source Floodlighting.hlsl
+	entry_point quarter_down_sample_vp
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto viewportSize viewport_size
+	}
+}
+
+fragment_program PostFilters/Floodlighting/down_sample_fp hlsl
+{
+	source Floodlighting.hlsl
+	entry_point quarter_down_sample_fp
+	target ps_3_0
+}
+
+vertex_program PostFilters/Floodlighting/blur_vp hlsl
+{
+	source Floodlighting.hlsl
+	entry_point blur_vp
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto viewportSize viewport_size
+
+		param_named direction float2 0 0
+	}
+}
+
+fragment_program PostFilters/Floodlighting/blur_fp hlsl
+{
+	source Floodlighting.hlsl
+	entry_point blur_fp
+	target ps_3_0
+}
+
+vertex_program PostFilters/Floodlighting/blend_vp hlsl
+{
+	source Floodlighting.hlsl
+	entry_point blend_vp
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program PostFilters/Floodlighting/blend_fp hlsl
+{
+	source Floodlighting.hlsl
+	entry_point blend_fp
+	target ps_3_0
+
+	default_params
+	{
+		param_named brightness float 0
+		param_named blur_amount float 0
+		param_named shine_amount float 0
+	}
+}
+
+
+///////////////////////////////////
+//			 PASS 0
+//		DOWN SAMPLE PASS
+///////////////////////////////////
+
+material PostFilters/Floodlighting/DownSample
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/Floodlighting/down_sample_vp
+			{
+			}
+			fragment_program_ref PostFilters/Floodlighting/down_sample_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering none
+			}
+		}
+	}
+}
+
+///////////////////////////////////
+//			 PASS 1
+//		HORIZONTAL BLUR PASS
+///////////////////////////////////
+
+material PostFilters/Floodlighting/BlurHorizontal
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/Floodlighting/blur_vp
+			{
+				param_named direction float2 1 0
+			}
+			fragment_program_ref PostFilters/Floodlighting/blur_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+
+///////////////////////////////////
+//			 PASS 2
+//		VERTICAL BLUR PASS
+///////////////////////////////////
+
+material PostFilters/Floodlighting/BlurVertical
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/Floodlighting/blur_vp
+			{
+				param_named direction float2 0 1
+			}
+			fragment_program_ref PostFilters/Floodlighting/blur_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+
+///////////////////////////////////
+//			 PASS 3
+//		BLEND PASS
+///////////////////////////////////
+
+material PostFilters/Floodlighting/Blend
+{
+	technique testtech
+	{
+		pass testtech
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/Floodlighting/blend_vp
+			{
+			}
+			fragment_program_ref PostFilters/Floodlighting/blend_fp
+			{
+				param_named brightness float 0.8
+				param_named blur_amount float 0.6
+				param_named shine_amount float 0.0
+			}
+
+			texture_unit
+			{
+				texture <input0>
+				tex_address_mode clamp
+				filtering none
+			}
+
+			texture_unit
+			{
+				texture <input1>
+				tex_address_mode clamp
+				filtering bilinear
+				tex_coord_set 1
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/Compositor/GaussianBlurHLSL_fp hlsl
+{
+	source GaussianBlur.hlsl
+	entry_point psGaussianBlur
+	target ps_3_0
+}
+
+material PostFilters/GaussianBlurH
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/GaussianBlurHLSL_fp
+			{
+				param_named fStrength float 1
+				
+				param_named offset float2 1 0
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+material PostFilters/GaussianBlurV
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/GaussianBlurHLSL_fp
+			{
+				param_named fStrength float 1
+				
+				param_named offset float2 0 1
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+fragment_program PostFilters/GodRays/genGodRays_fp hlsl
+{
+	source GodRays.hlsl
+	entry_point genGodRays_fp
+	target ps_3_0
+}
+
+fragment_program PostFilters/GodRays/addGodRays_fp hlsl
+{
+	source GodRays.hlsl
+	entry_point addGodRays_fp
+	target ps_3_0
+}
+
+material PostFilters/GodRays/GenGodRays
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+
+			fragment_program_ref PostFilters/GodRays/genGodRays_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+material PostFilters/GodRays/AddGodRays
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+
+			fragment_program_ref PostFilters/GodRays/addGodRays_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture <input>
+				tex_address_mode clamp
+				filtering none
+			}
+
+			texture_unit
+			{
+				texture <input1>
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+material HDR/Downsample2x2Luminance
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref HDR/StandardVS
+			{
+			}
+			fragment_program_ref HDR/Downscale2x2LuminanceFp
+			{
+			}
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+
+material HDR/Downsample3x3
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref HDR/StandardVS
+			{
+			}
+			fragment_program_ref HDR/Downscale3x3
+			{
+			}
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+
+material HDR/Downsample3x3Brightpass
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref HDR/StandardVS
+			{
+			}
+			fragment_program_ref HDR/Downscale3x3brightpassFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+			//Luminence 
+			texture_unit
+			{
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+
+material HDR/GaussianBloom0
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref HDR/StandardVS
+			{
+			}
+			fragment_program_ref HDR/Bloomfp
+			{
+			}
+			// Input 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+material HDR/GaussianBloom1
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref HDR/StandardVS
+			{
+			}
+			fragment_program_ref HDR/Bloomfp
+			{
+			}
+			// Input 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering none 
+			}
+		}
+	}
+}
+
+material HDR/ToneMapping
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+
+			vertex_program_ref HDR/StandardVS
+			{
+			}
+			fragment_program_ref HDR/FinaltonemappingFp
+			{
+			}
+			//Scene 
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+			}
+			//Bloom
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+			//Luminence 
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+
+
+
+fragment_program PostFilters/Compositor/HeatWaveHLSL_fp hlsl
+{
+	source HeatHaze.hlsl
+	entry_point psHeatWave
+	target ps_3_0
+}
+
+material PostFilters/HeatHaze
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/HeatWaveHLSL_fp
+			{
+				param_named fSpeed float 0.05
+				
+				param_named_auto fTime time
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit heathazenoise
+			{
+				texture HeatHazeNoise_high.dds
+				tex_coord_set 0
+				tex_address_mode wrap
+				filtering none
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/Compositor/FakeLightMoveHLSL_fp hlsl
+{
+	source HeatHaze_Lightmove.hlsl
+	entry_point psLightMove
+	target ps_3_0
+}
+
+material PostFilters/LightMove
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/FakeLightMoveHLSL_fp
+			{
+				param_named fSpeed float 0.05
+				
+				param_named_auto fTime time
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+///////////////////////////////////
+//			 PASS 0
+//		HEAT CASTERS PASS
+///////////////////////////////////
+
+vertex_program PostFilters/HeatVision/HeatCaster_vp hlsl
+{
+	source HeatVision.hlsl
+	entry_point HeatCaster_vp
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program PostFilters/HeatVision/HeatCaster_fp hlsl
+{
+   source HeatVision.hlsl
+   entry_point HeatCaster_fp
+   target ps_3_0
+}
+
+material PostFilters/HeatVision/HeatCaster
+{
+    technique
+    {
+        pass
+        {
+            vertex_program_ref PostFilters/HeatVision/HeatCaster_vp
+            {
+            }
+            fragment_program_ref PostFilters/HeatVision/HeatCaster_fp
+            {
+            }
+        }
+    }
+}
+
+///////////////////////////////////
+//			 PASS 0
+//		COLD CASTERS PASS
+///////////////////////////////////
+
+vertex_program PostFilters/HeatVision/ColdCaster_vp hlsl
+{
+	source HeatVision.hlsl
+	entry_point ColdCaster_vp
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program PostFilters/HeatVision/ColdCaster_fp hlsl
+{
+   source HeatVision.hlsl
+   entry_point ColdCaster_fp
+   target ps_3_0
+}
+
+material PostFilters/HeatVision/ColdCaster
+{
+    technique
+    {
+        pass
+        {
+            vertex_program_ref PostFilters/HeatVision/ColdCaster_vp
+            {
+            }
+            fragment_program_ref PostFilters/HeatVision/ColdCaster_fp
+            {
+            }
+        }
+    }
+}
+
+///////////////////////////////////
+//			  PASS 1
+//  LIGHT TO HEAT CONVERSION PASS
+///////////////////////////////////
+
+fragment_program PostFilters/HeatVision/LightToHeat_fp hlsl
+{
+	source HeatVision.hlsl
+	entry_point LightToHeat_fp
+	target ps_3_0
+
+	default_params
+	{
+		// these should be *really* random!
+		param_named random_fractions float4 0.3 0.7 0 0
+
+		param_named depth_modulator float4 0.6 0 0 0
+
+		// this one can be fixed
+		param_named heatBiasScale float4 0.0 1.0 0 0
+	}
+}
+
+material PostFilters/HeatVision/LightToHeat
+{
+    technique
+    {
+        // pass 1
+        pass
+        {
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+            vertex_program_ref PostFilters/std_quad_vs_3_0
+            {
+            }
+            fragment_program_ref PostFilters/HeatVision/LightToHeat_fp
+            {
+            }
+
+            // INPUT (from scene, where entities has "PostFilters/HeatVision/Caster" material for heat emanation)
+            texture_unit
+            {
+                texture <input>
+                tex_address_mode clamp
+                filtering none
+            }
+
+            // Noise map
+            texture_unit
+            {
+                texture HeatNoise.tga
+                filtering bilinear
+                tex_coord_set 1
+            }
+
+            // heat conversion texture
+            texture_unit
+            {
+                texture HeatLookup.tga
+                tex_address_mode clamp
+                filtering none
+                tex_coord_set 2
+            }
+        }
+    }
+
+}
+
+
+///////////////////////////////////
+//			  PASS 2
+//			 BLUR PASS
+///////////////////////////////////
+
+fragment_program PostFilters/HeatVision/Blur_fp hlsl
+{
+	source HeatVision.hlsl
+	entry_point Blur_fp
+	target ps_3_0
+
+	default_params
+	{
+		param_named blurAmount float4 0.5 0 0 0
+	}
+}
+
+material PostFilters/HeatVision/Blur
+{
+    technique
+    {
+        // pass 1
+        pass
+        {
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+            vertex_program_ref PostFilters/std_quad_vs_3_0
+            {
+            }
+            fragment_program_ref PostFilters/HeatVision/Blur_fp
+            {
+            }
+
+            // INPUT (from previous)
+            texture_unit
+            {
+                texture <input>
+                tex_address_mode clamp
+                filtering bilinear
+            }
+        }
+    }
+}
+
+vertex_program Fog/HeightFog_vs hlsl
+{
+	source HeightFog_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	default_params
+	{
+		param_named_auto worldviewproj_matrix worldviewproj_matrix
+	}
+}
+
+fragment_program Fog/HeightFog_fp hlsl
+{
+	source HeightFog_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	default_params
+	{
+		param_named_auto cTargetSize viewport_size
+		//param_named_auto near_clip_distance near_clip_distance
+    //param_named_auto far_clip_distance far_clip_distance
+	}
+}
+
+fragment_program Fog/HeightFog_DSIntZ_fp hlsl
+{
+   source HeightFog_ps.hlsl
+   entry_point main
+   target ps_3_0
+   column_major_matrices false
+   preprocessor_defines USE_DSINTZ=1
+   default_params               
+   {
+      param_named_auto cTargetSize viewport_size
+      param_named_auto near_clip_distance near_clip_distance
+      param_named_auto far_clip_distance far_clip_distance
+   }
+}
+
+material PostFilters/HeightFog
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+			//scene_blend alpha_blend
+
+			vertex_program_ref Fog/HeightFog_vs
+			{
+			}
+			fragment_program_ref Fog/HeightFog_fp
+			{
+			}
+			
+			texture_unit scene
+      {
+        tex_address_mode clamp
+      }
+			
+			texture_unit DepthTex
+      {
+        tex_address_mode clamp
+        content_type compositor SceneRender depth_buffer
+      }
+		}
+	}
+}
+
+
+material PostFilters/HeightFog_DSIntZ
+{
+  technique
+  {
+    pass
+    {
+    	lighting off
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+			
+      vertex_program_ref Fog/HeightFog_vs
+      {
+      }
+     
+      fragment_program_ref Fog/HeightFog_DSIntZ_fp
+      {
+      }
+
+      texture_unit scene
+      {
+        tex_address_mode clamp
+      }
+
+      texture_unit DepthTex
+      {
+        tex_address_mode clamp
+        content_type dsintz
+      }
+    }
+  }
+}
+
+
+//
+//  filename:   MotionBlur.material
+//  created:    2006/02/24
+//  author:     Genva Xie (genva@21cn.com)
+//
+//  purpose:    Motion blur post filter
+//
+
+fragment_program PostFilters/MotionBlur/combine_fp hlsl
+{
+	source MotionBlur.hlsl
+	target ps_3_0
+	entry_point combine_fp
+
+	default_params
+	{
+		param_named blur float 0.8
+	}
+}
+
+material PostFilters/MotionBlur/Combine
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/MotionBlur/combine_fp
+			{
+			}
+
+			texture_unit
+			{
+				//texture <scene>
+				tex_address_mode clamp
+				filtering linear linear none
+                tex_coord_set 0
+			}
+
+			texture_unit
+			{
+				//texture <sum>
+				tex_address_mode clamp
+				filtering linear linear none
+                tex_coord_set 0
+			}
+		}
+	}
+}
+
+material PostFilters/MotionBlur/Copy
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			texture_unit
+			{
+				//texture <source>
+				tex_address_mode clamp
+				filtering linear linear none
+                tex_coord_set 0
+				colour_op replace
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/Compositor/RadialBlurHLSL_fp hlsl
+{
+	source RadialBlur.hlsl
+	entry_point psRadialBlur
+	target ps_3_0
+}
+
+material PostFilters/RadialBlur
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/RadialBlurHLSL_fp
+			{
+				param_named_auto vvp viewport_size
+				param_named fStrength float 1
+				param_named fUnblured float 0.1
+			}
+
+			texture_unit
+			{
+				tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/ClearSceneDepth/clear_fp hlsl
+{
+	source SceneDepth.hlsl
+	target ps_3_0
+	entry_point scenedepth_clear_fp
+
+	default_params
+	{
+		//param_named blurColourScale float 0.95
+		//param_named_auto vvp viewport_size
+	}
+}
+
+material PostFilters/ClearSceneDepthRT
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			
+			fragment_program_ref PostFilters/ClearSceneDepth/clear_fp
+			{
+			}
+		}
+	}
+}
+
+
+
+
+fragment_program PostFilters/Compositor/ScreenRainHLSL_fp hlsl
+{
+	source ScreenRain.hlsl
+	entry_point psScreenRain
+	target ps_3_0
+}
+
+fragment_program PostFilters/Compositor/ScreenRainMixHLSL_fp hlsl
+{
+	source ScreenRain.hlsl
+	entry_point psScreenRainMix
+	target ps_3_0
+}
+
+material PostFilters/ScreenRain
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/ScreenRainHLSL_fp
+			{
+				param_named vTrailColor float3 0.7 0.8 0.9
+				param_named vTrailDensity float 0.1
+			
+				param_named_auto fTime time
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit
+			{
+				texture ScreenRainNoise.dds
+				tex_coord_set 0
+				tex_address_mode wrap
+				filtering bilinear
+			}
+			texture_unit texRainMask
+			{
+				texture Screen_Rain_Mask
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+material PostFilters/ScreenRain/Mix
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+			scene_blend src_alpha one_minus_src_alpha
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/ScreenRainMixHLSL_fp
+			{
+				param_named fTrailWeakness float 2
+			
+				param_named_auto fElapsedTime frame_time
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering none
+			}
+			texture_unit texRainMask
+			{
+				texture Screen_Rain_Mask
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+material PostFilters/ScreenRain/CopyBack
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+			scene_blend src_alpha one_minus_src_alpha
+			lighting off
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+// for particle
+material PostFilters/Particle/ScreenRainImage
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			depth_write off
+			scene_blend src_alpha one_minus_src_alpha
+			lighting off
+
+			texture_unit
+			{
+				texture ScreenRain_test.dds
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/Compositor/ScreenChapHLSL_fp hlsl
+{
+	source ScreenSplit.hlsl
+	entry_point psScreenChap
+	target ps_3_0
+}
+
+material PostFilters/ScreenSplit
+{
+	technique
+	{
+		pass
+		{
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+			fragment_program_ref PostFilters/Compositor/ScreenChapHLSL_fp
+			{
+				// Uncomment the following line to control the chap manually,
+				// Please also uncomment the 239th line in __ldj.hlsl
+				// This param's range is [0, 1]
+				param_named fPlayRatio float 0
+				
+				//param_named_auto fTime time
+			}
+
+			texture_unit
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit splittex
+			{
+				// Change this texture to get more styles
+				texture ScreenSplitImage.dds
+				tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			texture_unit masktex
+			{
+				// Change this texture to get more styles
+				texture ScreenSplitMask.dds
+				tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+		}
+	}
+}
+
+fragment_program genSSAO_fp hlsl
+{
+	source SSAO.hlsl
+	entry_point genAO_fp
+	target ps_3_0
+
+	default_params
+	{
+		param_named_auto viewport_size viewport_size	
+	}
+}
+
+material GenSSAO
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+			fog_override true none
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+
+			fragment_program_ref genSSAO_fp
+			{		
+			}
+
+			texture_unit
+			{
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+
+fragment_program PostFilters/TransScene_Wave_HLSL_fp hlsl
+{
+	source TransSceneEffect.hlsl
+	entry_point TransScene_Wave_fp
+	target ps_3_0
+}
+
+material PostFilters/TransScene_Wave
+{
+	technique
+	{
+		pass
+		{
+
+			cull_hardware none
+			cull_software none
+			depth_check off
+			lighting off
+
+			vertex_program_ref PostFilters/std_quad_vs_3_0
+			{
+			}
+
+			fragment_program_ref PostFilters/TransScene_Wave_HLSL_fp
+			{
+				param_named timeFactor float 0
+				param_named_auto vvp viewport_size
+			}
+
+			texture_unit
+			{
+        tex_coord_set 0
+				tex_address_mode clamp
+				filtering bilinear
+			}
+			
+			texture_unit
+			{
+				texture chaos.jpg -1
+				tex_address_mode clamp
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune0
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune0.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune1
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune1.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune2
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune2.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+
+material Game/AuraRune3
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune3.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune4
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune4.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune5
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune5.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune6
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune6.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune7
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune7.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune8
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune8.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune9
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune9.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/AuraRune10
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune10.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+material Game/AuraRune11
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune11.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+material Game/AuraRune12
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune12.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+material Game/AuraRune13
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune13.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+		}
+	}
+}
+material Game/AuraRune14
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune14.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+		}
+	}
+}
+
+material Game/AuraRune15
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 7
+
+			texture_unit
+			{
+				texture AuraRune15.tga
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+		}
+	}
+}
+
+
+material Game/ReachAble
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend add
+			depth_check on
+			depth_write off
+			depth_bias 2
+			
+			texture_unit
+			{
+				texture ReachAble.jpg
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/UnReachAble
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend add
+			depth_check on
+			depth_write off
+			depth_bias 2
+
+			texture_unit
+			{
+				texture UnReachAble.jpg
+				tex_address_mode clamp
+				rotate_anim 0.3
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/ShadowBlob
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true
+			scene_blend modulate
+			depth_check on
+			depth_write off
+			depth_bias 1
+
+			texture_unit
+			{
+				texture ShadowBlob.tga
+				tex_address_mode clamp
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/UnitSelect
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 2
+
+			texture_unit
+			{
+				texture UnitSelectTexture.tga
+				tex_address_mode clamp
+				rotate_anim 0.1
+				filtering none
+			}
+
+		}
+	}
+}
+
+material Game/FurnitureSelect
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			fog_override true none
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+			depth_bias 2
+
+			texture_unit
+			{
+				texture FurnitureSelectTexture.tga
+				tex_address_mode clamp
+				rotate_anim 0.1
+				filtering none
+			}
+
+		}
+	}
+}
+
+
+/////////////////////////////////////////////////
+//skyDome material
+/////////////////////////////////////////////////
+vertex_program EnScene/skydome_vp hlsl
+{
+	source EnScene.hlsl
+	entry_point En_sky_dome_v
+	target  vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+	}
+}
+
+fragment_program EnScene/skydome_fp hlsl
+{
+	source EnScene.hlsl
+	entry_point En_sky_dome_p
+	// sorry, ps_1_1 and fp20 can't do this
+	target ps_3_0
+
+	default_params
+	{
+		param_named_auto ambientCol skydome_ambient_color
+	}
+}
+
+material EnScene/skyDome
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend one zero
+			depth_check on
+			depth_write off
+			depth_func less_equal
+			fog_override true none 
+			point_sprites off
+			vertex_program_ref EnScene/skydome_vp 
+			{
+			}
+			fragment_program_ref EnScene/skydome_fp 
+			{
+				
+			}
+			texture_unit
+			{
+				texture mie_gradient.dds
+			}
+		}
+	}
+}
+
+/////////////////////////////////////////////////
+//sun and moon material
+/////////////////////////////////////////////////
+vertex_program EnScene/sunandmoon_v hlsl
+{
+	source EnScene.hlsl
+	entry_point En_sunandmoon_vp
+	target vs_3_0
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+	}
+}
+
+fragment_program EnScene/sunandmoon_f hlsl
+{
+	source EnScene.hlsl
+	entry_point En_sunandmoon_fp
+	// sorry, ps_1_1 and fp20 can't do this
+	target ps_3_0
+}
+
+material EnScene/moon
+{
+	technique
+	{
+		pass
+		{
+			depth_check on
+			scene_blend alpha_blend 
+			depth_write off
+			depth_func less_equal
+			fog_override true none
+			vertex_program_ref EnScene/sunandmoon_v
+			{
+			}
+			fragment_program_ref EnScene/sunandmoon_f
+			{
+				
+			}
+			texture_unit
+			{
+				texture png_moon_03.dds
+			}
+		}
+	}
+}
+
+//太阳做遮挡计算时用的材质
+material EnScene/sunocclusion
+{
+	technique
+	{		
+		pass
+		{
+			depth_check on
+			scene_blend zero one 
+			depth_write off
+			depth_func less_equal
+			fog_override true none  
+			vertex_program_ref EnScene/sunandmoon_v
+			{
+			}
+			fragment_program_ref EnScene/sunandmoon_f
+			{
+				
+			}
+			texture_unit
+			{
+				texture sun.dds 
+			}
+		}
+	}
+}
+//太阳正常渲染的材质
+material EnScene/sun
+{
+	technique
+	{		
+		pass
+		{
+			depth_check on
+			scene_blend alpha_blend 
+			depth_write off
+			depth_func less_equal
+			fog_override true none   
+			vertex_program_ref EnScene/sunandmoon_v
+			{
+			}
+			fragment_program_ref EnScene/sunandmoon_f
+			{
+				
+			}
+			texture_unit
+			{
+				texture sun.dds 
+			}
+		}
+	}
+}
+
+vertex_program EnScene/flare_vp hlsl
+{
+	source EnScene.hlsl
+	entry_point En_flare_vp
+	target vs_3_0
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+	}
+}
+
+fragment_program EnScene/flare_fp hlsl
+{
+	source EnScene.hlsl
+	entry_point En_flare_fp
+	target ps_3_0
+}
+
+material EnScene/sunflare1
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+			scene_blend src_alpha one 
+			depth_write off
+			depth_func less_equal
+			fog_override true none  
+			vertex_program_ref EnScene/flare_vp
+			{
+			}
+			fragment_program_ref EnScene/flare_fp
+			{
+				
+			}
+			texture_unit
+			{
+				texture fx_flare_trees.dds
+			}
+		}
+	}
+}
+/////////////////////////////////////////////////
+//cloud material
+/////////////////////////////////////////////////
+vertex_program EnScene/cloud_v hlsl
+{
+	source EnScene.hlsl
+	entry_point En_cloudv
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto worldMatrix world_matrix
+		param_named_auto farClipDistance  far_clip_distance
+	}
+}
+
+fragment_program EnScene/cloud_p hlsl
+{
+	source EnScene.hlsl
+	entry_point En_cloudp
+	target ps_3_0
+	default_params
+	{
+		param_named_auto fogColour fog_colour
+		param_named_auto ambientCol ambient_light_colour
+		param_named_auto surfaceAmbientCol surface_ambient_colour
+	}
+}
+//顶云正常渲染材质
+material EnScene/cloud	
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 1 1 1
+      lighting off
+			scene_blend alpha_blend 
+			depth_check on
+			depth_write off
+			depth_func less_equal
+			fog_override true none
+			cull_hardware none
+			cull_software none
+			point_sprites off
+			vertex_program_ref EnScene/cloud_v 
+			{
+
+			}
+			fragment_program_ref EnScene/cloud_p
+			{
+
+			}
+		}
+	}
+}
+//太阳遮挡计算是用的顶云材质
+material EnScene/cloudocclusion	
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 1 1 1
+			alpha_rejection greater_equal 50
+			lighting off
+			scene_blend zero one 
+			depth_check on
+			depth_write on
+			depth_func less_equal
+			fog_override true none
+			cull_hardware none
+			cull_software none 
+			point_sprites off
+			vertex_program_ref EnScene/cloud_v 
+			{
+			}
+			fragment_program_ref EnScene/cloud_p
+			{
+			}
+		}
+	}
+}
+
+/////////////////////////////////////////////////
+//ring cloud material
+/////////////////////////////////////////////////
+vertex_program EnScene/ringcloudv hlsl
+{
+	source EnScene.hlsl
+	entry_point En_ringcloudv
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto worldMatrix world_matrix
+		param_named_auto cameraPos camera_position
+		param_named_auto farClipDistance  far_clip_distance
+	}
+}
+
+fragment_program EnScene/ringcloudp hlsl
+{
+	source EnScene.hlsl
+	entry_point En_ringcloudp
+	// sorry, ps_1_1 and fp20 can't do this
+	target ps_3_0
+	default_params
+	{
+		param_named_auto fogColour fog_colour
+		param_named_auto ambientCol ambient_light_colour
+		param_named_auto surfaceAmbientCol surface_ambient_colour
+	}
+}
+//环云正常渲染材质
+material EnScene/ringcloud  
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 1 1 1
+			scene_blend alpha_blend 
+			depth_check on
+			depth_write off
+			depth_func less_equal
+			fog_override true none
+			cull_hardware none
+			cull_software none
+			colour_write on  
+			point_sprites off
+			lighting off
+			vertex_program_ref EnScene/ringcloudv 
+			{
+			}
+			fragment_program_ref EnScene/ringcloudp
+			{
+			}
+		}
+	}
+}
+//太阳遮挡计算是时的环云材质
+material EnScene/ringcloudocclusion  
+{
+	technique
+	{
+		pass
+		{
+			alpha_rejection greater_equal 150 
+			ambient 1 1 1 1
+			scene_blend zero one 
+			depth_check on
+			depth_write on
+			depth_func less_equal
+			fog_override true none
+			cull_hardware none
+			cull_software none
+			colour_write on   
+			point_sprites off
+			lighting off
+			vertex_program_ref EnScene/ringcloudv 
+			{
+			}
+			fragment_program_ref EnScene/ringcloudp
+			{
+			}
+		}
+	}
+}
+
+material SkySphere/FixedStar
+{
+	technique
+	{
+		pass
+		{
+			scene_blend src_alpha one
+			fog_override true none
+			depth_write off
+			point_sprites on						
+			vertex_program_ref StarVP
+			{
+			}
+			fragment_program_ref StarFP
+			{
+			}
+		
+		}
+	}
+}
+
+vertex_program EnScene/LensFlare_vp hlsl
+{
+	source LensFlare.hlsl
+	entry_point lensFlare_vp
+	target vs_3_0
+}
+
+fragment_program EnScene/LensFlare_fp hlsl
+{
+	source LensFlare.hlsl
+	entry_point lensFlare_fp
+	target ps_3_0
+}
+
+material EnScene/LensFlare
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+			scene_blend src_alpha one
+			fog_override true none
+
+			vertex_program_ref EnScene/LensFlare_vp
+			{
+			}
+
+			fragment_program_ref EnScene/LensFlare_fp
+			{		
+			}
+
+			texture_unit
+			{
+				content_type dsintz
+			}
+
+			texture_unit
+			{
+			}
+		}
+	}
+}
+
+vertex_program CloudySky_vp hlsl
+{
+	source EnScene.hlsl
+	entry_point SkyDome_V
+	target  vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto textureMatrix texture_matrix 0
+	}
+}
+
+fragment_program CloudySky_fp hlsl
+{
+	source EnScene.hlsl
+	entry_point SkyDome_F
+	target ps_3_0
+}
+
+material CloudySky
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			
+			vertex_program_ref CloudySky_vp 
+			{
+			}
+			fragment_program_ref CloudySky_fp
+			{
+			}
+
+			texture_unit
+			{
+				texture clouds.jpg	
+				 scroll_anim 0.03 0.03			 
+			}
+		}
+	}
+}
+material baseWater
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off    
+			render_queue on 73
+			vertex_program_ref Base_Water_VS
+			{
+			}
+			fragment_program_ref Base_Water_PS
+			{
+				param_named heightParams float2 1 0
+			}    
+			texture_unit
+			{
+				texture jpg_<baseTex>.dds
+				texture_alias <baseTexture>			
+			}
+			texture_unit DepthTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type compositor SceneRender depth_buffer
+			}
+		}
+	}
+}
+
+material baseWater_DSIntZ
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off    
+			render_queue on 73
+			vertex_program_ref Base_Water_VS
+			{
+			}
+			fragment_program_ref Base_Water_PS_DSIntZ
+			{
+				param_named heightParams float2 1 0
+			}    
+			texture_unit
+			{
+				texture jpg_<baseTex>.dds
+				texture_alias <baseTexture>			
+			}
+			texture_unit DepthTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type dsintz
+			}
+		}
+	}
+}
+
+material waterNormal
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.488235 0.488235 0.488235 1
+			diffuse 0.488235 0.488235 0.488235 1
+			specular 0.7 0.7 0.7 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_水.dds 28 2		
+				colour_op_ex add src_texture src_diffuse
+				colour_op_multipass_fallback one one		
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+material 水01
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 0.7
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+
+			texture_unit
+			{
+				anim_texture jpg_riverWater.dds 24 1
+			}
+		}
+	}
+}
+
+material 水01Depth
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+
+			texture_unit
+			{
+				anim_texture jpg_riverWater.dds 24 1
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+material haihuwater
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_海湖水.dds 28 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+material heliuwater
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_河流.dds 28 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+material 水01_moon
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 0.7
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+
+			texture_unit
+			{
+				anim_texture jpg_riverWater.dds 24 1
+			}
+
+			texture_unit Fairy/Projector
+			{
+				anim_texture tga_moon.dds 28 2
+				tex_address_mode clamp
+				colour_op_ex blend_texture_alpha src_texture src_current
+				alpha_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback src_alpha one_minus_src_alpha
+			}
+		}
+	}
+}
+material haihuwater_moon
+{
+   technique
+   {
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_河流.dds 28 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+
+			texture_unit Fairy/Projector
+			{
+				anim_texture tga_moon.dds 28 2
+				tex_address_mode clamp
+				colour_op_ex blend_texture_alpha src_texture src_current
+				alpha_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback src_alpha one_minus_src_alpha
+			}
+		}
+   }
+}
+material shuiyinwater
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_水银.dds 30 5				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+material bingwater
+{
+	technique
+	{
+		pass
+		{
+			specular 0.9 0.9 0.9 100
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+
+			texture_unit
+			{
+				anim_texture jpg_冰.dds 2 1
+			}
+		                texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+material haihuwaterlv
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_海湖水绿.dds 28 3				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+material waterNormalDepth
+{
+
+}
+
+material huwaterlv
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_湖水.dds 20 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+material haihuwaterlan
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_海湖水蓝.dds 28 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+material huwaterlan
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_湖水蓝.dds 20 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////
+//water fog programs
+//////////////////////////////////////////////////////////
+
+vertex_program Water/water_Fog/VS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterFog_VS
+	target vs_3_0
+	
+	default_params
+	{
+		param_named_auto worldMatrix world_matrix
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto camFrontDir view_direction
+	}
+}
+
+fragment_program Water/water_Fog/PS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterFog_PS
+	target ps_3_0
+	
+	default_params
+	{
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 70
+		param_named_auto viewport_size viewport_size
+	}
+}
+
+fragment_program Water/water_Fog_DSIntZ/PS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterFog_PS
+	target ps_3_0
+	preprocessor_defines USE_DSINTZ=1
+	default_params
+	{
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 70
+		param_named_auto near_clip_distance near_clip_distance  
+    param_named_auto far_clip_distance far_clip_distance
+    param_named_auto viewport_size viewport_size
+	}
+}
+
+vertex_program Water/water_Fog_mirror/VS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterFog_VS
+	target vs_3_0
+	
+	default_params
+	{
+		param_named_auto worldMatrix world_matrix
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto camFrontDir view_direction
+	}
+}
+
+fragment_program Water/water_Fog_mirror/PS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterFog_PS
+	target ps_3_0
+	
+	default_params
+	{
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 70
+		param_named_auto viewport_size viewport_size
+	}
+}
+
+fragment_program Water/water_Fog_mirror_DSIntZ/PS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterFog_PS
+	target ps_3_0
+	preprocessor_defines USE_DSINTZ=1
+	default_params
+	{
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 70
+		param_named_auto near_clip_distance near_clip_distance  
+    		param_named_auto far_clip_distance far_clip_distance
+    		param_named_auto viewport_size viewport_size
+	}
+}
+
+//////////////////////////////////////////////////////////
+//water ReflectionReraction programs
+//////////////////////////////////////////////////////////
+
+vertex_program Water/water_ReflectionReraction/VS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterReflectionReraction_VS
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto timeVal time 0.0125
+
+		param_named_auto worldview_matrix worldview_matrix
+
+		param_named wavesSpeed float 1
+	}
+}
+
+fragment_program Water/water_ReflectionReraction/PS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterReflectionReraction_PS
+	target ps_3_0
+
+	default_params
+	{
+		param_named_auto SunLightDir light_direction 0
+		param_named_auto SunColor light_diffuse_colour	0
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		param_named BigWavesScale float 0.59
+		param_named SmallWavesScale float 0.44
+		param_named BumpScale float2 0.6 0.6
+		param_named ReflectionAmount float 0.22
+		param_named TransparencyRatio float 0.11
+		param_named SunShinePow float 113
+		param_named SunMultiplier float 0.41
+		param_named FresnelBias float 0.1
+		param_named UVScale float2 1.0 1.0
+	}
+}
+
+vertex_program Water/water_MirrorReflectionReraction/VS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterReflectionReraction_VS
+	target vs_3_0
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto timeVal time 0.0125
+
+		param_named_auto worldview_matrix worldview_matrix
+
+		param_named wavesSpeed float 1
+	}
+}
+
+fragment_program Water/water_MirrorReflectionReraction/PS hlsl
+{
+	source WaterReflectionReraction.hlsl
+	entry_point WaterReflectionReraction_PS
+	target ps_3_0
+	preprocessor_defines USE_MIRROR=1
+	default_params
+	{
+		//param_named_auto viewportSize viewport_size
+		param_named_auto SunLightDir light_direction 0
+		param_named_auto SunColor light_diffuse_colour	0
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		param_named BigWavesScale float 0.59
+		param_named SmallWavesScale float 0.44
+		param_named BumpScale float2 0.6 0.6
+		param_named TransparencyRatio float 0.11
+		param_named SunShinePow float 113
+		param_named SunMultiplier float 0.41
+		param_named FresnelBias float 0.1
+		param_named UVScale float2 1.0 1.0
+	}
+}
+
+//////////////////////////////////////////////////////////
+//water material
+//////////////////////////////////////////////////////////
+
+material shader_water01
+{
+	technique WaterFog
+	{
+		//scheme WaterFog
+		// render fog under water
+		pass
+		{
+			depth_write off
+			//scene_blend alpha_blend
+			separate_scene_blend src_alpha one_minus_src_alpha zero zero
+			
+			vertex_program_ref Water/water_Fog/VS
+			{
+			}
+			fragment_program_ref Water/water_Fog/PS
+			{
+			}
+			texture_unit DepthTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type compositor SceneRender depth_buffer
+			}
+		}
+	}
+
+	technique Effect
+	{	
+		pass
+		{
+			depth_write off
+			//fog_override true none
+			vertex_program_ref Water/water_ReflectionReraction/VS
+			{
+			}
+			fragment_program_ref Water/water_ReflectionReraction/PS
+			{
+			}
+
+			texture_unit
+			{
+				texture oceanwaves.dds 2d
+				filtering trilinear
+			}
+			texture_unit CubicMap
+			{
+				texture Water_Cubicmap.dds cubic
+				texture_alias <Water_Cubicmap>
+			}
+			texture_unit RefractTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type compositor SceneRender scene_buffer
+			}
+		}
+	}
+}
+
+material shader_water01_DSIntZ
+{
+	technique WaterFog
+	{
+		//scheme WaterFog
+		// render fog under water
+		pass
+		{
+			depth_write off
+			//scene_blend alpha_blend
+			separate_scene_blend src_alpha one_minus_src_alpha zero zero
+			
+			vertex_program_ref Water/water_Fog/VS
+			{
+			}
+			fragment_program_ref Water/water_Fog_DSIntZ/PS
+			{
+			}
+			texture_unit DepthTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type dsintz
+			}
+		}
+	}
+
+	technique Effect
+	{	
+		pass
+		{
+			depth_write off
+			//fog_override true none
+			vertex_program_ref Water/water_ReflectionReraction/VS
+			{
+			}
+			fragment_program_ref Water/water_ReflectionReraction/PS
+			{
+			}
+
+			texture_unit
+			{
+				texture oceanwaves.dds 2d
+				filtering trilinear
+			}
+			texture_unit CubicMap
+			{
+				texture Water_Cubicmap.dds cubic
+				texture_alias <Water_Cubicmap>
+			}
+			texture_unit RefractTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type compositor SceneRender scene_buffer
+			}
+		}
+	}
+}
+
+material shader_water_mirror
+{
+	technique WaterFog
+	{
+		//scheme WaterFog
+		// render fog under water
+		pass
+		{
+			depth_write off
+			//scene_blend alpha_blend
+			separate_scene_blend src_alpha one_minus_src_alpha zero zero
+			
+			vertex_program_ref Water/water_Fog_mirror/VS
+			{
+			}
+			fragment_program_ref Water/water_Fog_mirror/PS
+			{
+			}
+			texture_unit DepthTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type compositor SceneRender depth_buffer
+			}
+		}
+	}
+
+	technique Effect
+	{	
+		pass
+		{
+			depth_write off
+			//fog_override true none
+			vertex_program_ref Water/water_MirrorReflectionReraction/VS
+			{
+			}
+			fragment_program_ref Water/water_MirrorReflectionReraction/PS
+			{
+			}
+
+			texture_unit
+			{
+				texture oceanwaves.dds 2d
+				filtering trilinear
+			}
+			texture_unit
+			{
+				texture ReflectTexInput
+				filtering trilinear
+			}
+			texture_unit RefractTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type compositor SceneRender scene_buffer
+			}
+		}
+	}
+}
+
+material shader_water_mirror_DSIntZ
+{
+	technique WaterFog
+	{
+		//scheme WaterFog
+		// render fog under water
+		pass
+		{
+			depth_write off
+			//scene_blend alpha_blend
+			separate_scene_blend src_alpha one_minus_src_alpha zero zero
+			
+			vertex_program_ref Water/water_Fog_mirror/VS
+			{
+			}
+			fragment_program_ref Water/water_Fog_mirror_DSIntZ/PS
+			{
+			}
+			texture_unit DepthTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type dsintz
+			}
+		}
+	}
+
+	technique Effect
+	{	
+		pass
+		{
+			depth_write off
+			scene_blend alpha_blend
+			//fog_override true none
+			vertex_program_ref Water/water_MirrorReflectionReraction/VS
+			{
+			}
+			fragment_program_ref Water/water_MirrorReflectionReraction/PS
+			{
+			}
+
+			texture_unit
+			{
+				texture oceanwaves.dds 2d
+				filtering trilinear
+			}
+			texture_unit
+			{
+				texture ReflectTexInput
+				filtering trilinear
+			}
+			texture_unit RefractTex
+			{
+				tex_address_mode clamp
+				filtering none
+				content_type compositor SceneRender scene_buffer
+			}
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////
+material huwatershenlv
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_湖水深绿.dds 40 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+material huwaterqing
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.588235 0.588235 0.588235 1
+			diffuse 0.588235 0.588235 0.588235 1
+			specular 0.9 0.9 0.9 20
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off        
+			texture_unit
+			{
+				anim_texture jpg_湖水青.dds 40 2				
+			}
+			texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+material xinbingwater
+{
+	technique
+	{
+		pass
+		{
+			specular 0.9 0.9 0.9 100
+			scene_blend alpha_blend
+			depth_check on
+			depth_write off
+
+			texture_unit
+			{
+				anim_texture jpg_新冰面.dds 2 1
+			}
+		                texture_unit
+			{
+				texture water_depth.tga 1d
+				colour_op_ex source1 src_current src_texture
+				colour_op_multipass_fallback one zero
+				alpha_op_ex modulate src_current src_texture
+				tex_coord_set 1
+				tex_address_mode clamp
+				filtering none none none
+			}
+		}
+	}
+}
+
+// 如果要使用Cube水，请参考这个模板的写法创建新的材质（不是继承）
+// Water_Cubicmap.dds是通过工具生成的cube贴图，每个水片可能需要生成不同的cube贴图
+// 该材质模型和下面带_DSIntZ的模板成对出现的
+// 请不要直接拿这个模板使用
+material Cube水参考 : shader_water01
+{
+	set_texture_alias <Water_Cubicmap> Water_Cubicmap.dds
+}
+
+material Cube水参考_DSIntZ : shader_water01_DSIntZ
+{
+	set_texture_alias <Water_Cubicmap> Water_Cubicmap.dds
+}
