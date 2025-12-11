@@ -1,0 +1,13 @@
+// Ogre overlay scripts
+Core/loginSplash2
+{
+	zorder 500
+	// Stats block
+	container Panel(Core/loginPanel2)
+	{	
+		material loginSplash2
+	}
+}
+
+
+

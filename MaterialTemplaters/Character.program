@@ -1,0 +1,1858 @@
+/////////////////////////////////////////////////////////////////
+// render model scene depth
+/////////////////////////////////////////////////////////////////
+
+vertex_program Depth_VS hlsl
+{
+	source Depth_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_TEXCOORD=1
+	default_params
+	{
+		param_named_auto world_matrix world_matrix
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix	projection_matrix
+	}
+}
+
+vertex_program Depth_NoTex_VS hlsl
+{
+	source Depth_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	
+	default_params
+	{
+		param_named_auto world_matrix world_matrix
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix	projection_matrix
+		
+	}
+}
+vertex_program Depth_VsAnimation_VS hlsl
+{
+	source Depth_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_TEXCOORD=1;VS_ANIMATION=1;
+	default_params
+	{
+		param_named_auto world_matrix world_matrix
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix	projection_matrix
+		param_named_auto wind_control_params wind_control_params
+		param_named vsAniFactor float4 10.0 10.0 10.0 10.0
+		param_named vsWindStrength float 10.0
+	}
+}
+
+vertex_program Depth_NoTex_VsAnimation_VS hlsl
+{
+	source Depth_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines VS_ANIMATION=1
+	default_params
+	{
+		param_named_auto world_matrix world_matrix
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix	projection_matrix
+		param_named vsAniFactor float4 10.0 10.0 10.0 10.0
+		param_named vsWindStrength float 10.0
+	}
+}
+
+vertex_program Depth_Skin_VS hlsl
+{
+	source Depth_vs.hlsl
+	includes_skeletal_animation true
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_SKIN=1;USE_TEXCOORD=1
+	default_params
+	{
+		param_named_auto world_matrix_array_3x4[0]	world_matrix_array_3x4
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+vertex_program Depth_DQSkin_VS hlsl
+{
+	source Depth_vs.hlsl
+	includes_skeletal_animation true
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_SKIN=1;USE_QUAT_SKIN=1;USE_TEXCOORD=1
+	default_params
+	{
+		param_named_auto dual_quaternion_array_2x4[0] dual_quaternion_array_2x4
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+vertex_program Depth_Skin_NoTex_VS hlsl
+{
+	source Depth_vs.hlsl
+	includes_skeletal_animation true
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_SKIN=1
+	default_params
+	{
+		param_named_auto world_matrix_array_3x4[0]	world_matrix_array_3x4
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+vertex_program Depth_DQSkin_NoTex_VS hlsl
+{
+	source Depth_vs.hlsl
+	includes_skeletal_animation true
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_SKIN=1;USE_QUAT_SKIN=1
+	default_params
+	{
+		param_named_auto dual_quaternion_array_2x4[0] dual_quaternion_array_2x4
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+fragment_program Depth_PS hlsl
+{
+	source Depth_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines ALPHATEST_ENABLE=1;USE_TEXCOORD=1
+	
+	default_params
+	{
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+fragment_program Depth_NoTex_PS hlsl
+{
+	source Depth_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines ALPHATEST_ENABLE=0
+}
+
+/////////////////////////////////////////////////////////////////
+// hardware no skin
+/////////////////////////////////////////////////////////////////
+vertex_program Model_VS hlsl
+{
+	source Model_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_TEXCOORD=1;USE_NORMAL=1
+	default_params
+	{
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto derived_scene_colour derived_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+    
+		param_named_auto world_matrix world_matrix
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto camera_position camera_position
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto imodel_userdata imodel_userdata
+		param_named_auto isystem_userdata isystem_userdata
+	}
+}
+/////////////////////////////////////////////////////////////////
+// vertext animation
+/////////////////////////////////////////////////////////////////
+vertex_program Model_VsAnimation_VS hlsl
+{
+	source Model_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_TEXCOORD=1;USE_NORMAL=1;VS_ANIMATION=1
+	default_params
+	{
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params		
+		param_named_auto derived_scene_colour derived_scene_colour
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+    
+		param_named_auto world_matrix world_matrix
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto camera_position camera_position
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto imodel_userdata imodel_userdata
+		param_named_auto isystem_userdata isystem_userdata
+		param_named_auto wind_control_params wind_control_params
+		
+		param_named vsAniFactor float4 0.0 0.0 0.0 0.0
+		param_named vsWindStrength float 10.0
+	}
+}
+/////////////////////////////////////////////////////////////////
+// hardware skin
+/////////////////////////////////////////////////////////////////
+vertex_program Model_Skin_VS hlsl
+{
+	source Model_vs.hlsl
+	includes_skeletal_animation true
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_SKIN=1;USE_TEXCOORD=1;USE_NORMAL=1
+	default_params
+	{
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto derived_scene_colour derived_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+    
+		param_named_auto world_matrix_array_3x4[0]	world_matrix_array_3x4
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto camera_position camera_position
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto imodel_userdata imodel_userdata
+		param_named_auto isystem_userdata isystem_userdata
+	}
+}
+
+vertex_program Model_Skin_XingNing_VS hlsl
+{
+	source Model_vs.hlsl
+	includes_skeletal_animation true
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_SKIN=1;USE_TEXCOORD=1;USE_NORMAL=1;XINGNING_EFFECT=1
+	default_params
+	{
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto derived_scene_colour derived_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+    
+		param_named_auto world_matrix_array_3x4[0]	world_matrix_array_3x4
+		param_named_auto view_matrix	view_matrix
+		param_named_auto projection_matrix projection_matrix
+		param_named_auto camera_position camera_position
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto imodel_userdata imodel_userdata
+		param_named_auto isystem_userdata isystem_userdata
+	}
+}
+
+/////////////////////////////////////////////////////////////////
+// Water VS
+/////////////////////////////////////////////////////////////////
+vertex_program Base_Water_VS hlsl
+{
+	source Water_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_TEXCOORD=1;USE_NORMAL=1;CALC_LIT=1
+	default_params
+	{
+		param_named_auto world_matrix world_matrix
+		param_named_auto worldviewproj_matrix worldviewproj_matrix
+		param_named_auto camera_position_object_space camera_position_object_space
+		param_named_auto view_direction view_direction
+		param_named_auto worldview_matrix worldview_matrix
+
+		param_named_auto surface_emissive_colour surface_emissive_colour
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto derived_ambient_light_colour derived_ambient_light_colour
+
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+	}
+}
+
+vertex_program Model_Water_VS hlsl
+{
+	source Water_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	preprocessor_defines USE_TEXCOORD=1;USE_NORMAL=1
+	default_params
+	{
+		param_named_auto world_matrix world_matrix
+		param_named_auto worldviewproj_matrix worldviewproj_matrix
+		param_named_auto camera_position_object_space camera_position_object_space
+		param_named_auto view_direction view_direction
+		param_named_auto worldview_matrix worldview_matrix
+		
+	}
+}
+
+/////////////////////////////////////////////////////////////////
+// fake Light VS
+/////////////////////////////////////////////////////////////////
+vertex_program Model_FakePointLight_VS hlsl
+{
+	source FakePointLight_vs.hlsl
+	entry_point main
+	target vs_3_0
+	column_major_matrices false
+	default_params
+	{
+		param_named_auto worldviewproj_matrix worldviewproj_matrix
+		param_named_auto worldview_matrix worldview_matrix
+	}
+}
+
+/////////////////////////////////////////////////////////////////
+// fake Light PS
+/////////////////////////////////////////////////////////////////
+fragment_program Model_FakePointLight_PS hlsl
+{
+	source Model_FakePointLight_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+		//param_named_auto near_clip_distance near_clip_distance
+		param_named_auto far_clip_distance far_clip_distance
+		param_named_auto inverse_worldview_matrix_3x4 inverse_worldview_matrix_3x4
+		
+		param_named lightParams float4 1.0 1.0 1.0 2.0
+	}
+}
+
+fragment_program Model_FakePointLight_DSIntZ_PS hlsl
+{
+	source Model_FakePointLight_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines USE_DSINTZ=1
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+		param_named_auto near_clip_distance near_clip_distance
+		param_named_auto far_clip_distance far_clip_distance
+		param_named_auto inverse_worldview_matrix_3x4 inverse_worldview_matrix_3x4
+		
+		param_named lightParams float4 1.0 1.0 1.0 2.0
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+// hardware ps
+/////////////////////////////////////////////////////////////////
+fragment_program Character_Skin_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Character_Skin_Dissolve_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines DISSOLVE_EFFECT=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+
+		param_named dissolveClip   float  0.0
+		param_named dissolveColorA float4 1.0 0.0 0.0 1.0
+		param_named dissolveColorB float4 1.0 1.0 0.0 1.0
+		param_named dissolveParams float4 0.05, 0.005, 0.02, 0.01
+	}
+}
+
+fragment_program Character_Skin_XingNing_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines XINGNING_EFFECT=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto world_matrix world_matrix
+		param_named_auto camera_position camera_position
+		param_named_auto time_0_x time_0_x 100
+
+		param_named rimTintColor float4 1 0.8 0.25 1
+		param_named starsTexDistortion_rimPow_rimClampMin_rimClampMax float4 0.05 1.17 0.1 0.93
+		param_named rimFlowFactor float4 1.0 1.0 1.0 0.1
+		param_named starsTexScaleFactor float 0.002
+	}
+}
+
+fragment_program Character_Skin_XingNing_PlannarRim_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines XINGNING_EFFECT=1;RIM_PLANNAR_MAPPING=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto world_matrix world_matrix
+		param_named_auto camera_position camera_position
+		param_named_auto time_0_x time_0_x 100
+
+		param_named rimTintColor float4 1 0.8 0.25 1
+		param_named starsTexDistortion_rimPow_rimClampMin_rimClampMax float4 0.05 1.17 0.1 0.93
+		param_named rimFlowFactor float4 1.0 1.0 1.0 0.1
+		param_named starsTexScaleFactor float 0.002
+	}
+}
+
+fragment_program Character_Skin_Dissolve_ByTime_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines DISSOLVE_EFFECT=4
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		param_named_auto time_0_x time_0_x 100
+		param_named dissolveClip   float  0.7
+		param_named dissolveColorA float4 0.0 0.0 1.0 1.0
+		param_named dissolveColorB float4 1.0 1.0 1.0 1.0
+		param_named dissolveParams float4 0.01, 0.01, 0.01, 0.01
+		param_named dissolveUVRepeat float2 3.0 3.0
+
+	}
+}
+
+fragment_program Character_Skin_LaserSpec_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LASER_SPEC=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named laserSpecStrength float 0.5
+	}
+}
+
+fragment_program Character_Skin_Face_PS hlsl
+{
+	source Model_Face_ps.hlsl
+	entry_point main
+	target ps_3_0
+		preprocessor_defines USE_TEXLOD0=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto derived_scene_colour derived_scene_colour
+		//param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		param_named_auto actor_ambient_params actor_ambient_params
+		//param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto imodel_userdata imodel_userdata
+	}
+
+}
+
+fragment_program Character_Skin_UseTexLod0_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines USE_TEXLOD0=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour	
+	}
+}
+
+fragment_program Character_Skin_Unlit_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=0
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Character_Skin_ColorAdd_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines BLEND_OP_0=3
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour	
+		//param_named_auto view_matrix	view_matrix
+		//param_named tex0BlendColor float4 0.0 0.0 0.0 0.0
+		//param_named multiBlendColor float4 1.0 1.0 1.0 1.0
+	}
+}
+
+fragment_program Character_Skin_ColorX2_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines BLEND_OP_0=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour	
+	}
+}
+
+fragment_program Character_Skin_ColorX4_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines BLEND_OP_0=2
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Character_Skin_SpereMaping_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines SPHEREMAPPING_ENABLE=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto view_matrix view_matrix
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Character_Skin_TexScrollX2_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1;BLEND_OP_1=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Character_Skin_TexScrollX4_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1;BLEND_OP_1=2
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Character_Frozen_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines BLEND_OP_0=1;FROZEN_ENANLE=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour	
+		param_named tex0BlendColor float3 0.0 0.0 0.0
+		param_named multiBlendColor float4 1.0 1.0 1.0 1.0
+	}
+}
+
+fragment_program Character_HighLight hlsl
+{
+	source Model_HighLight_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines HIGHLIGHT_ENABLE=1
+	default_params
+	{		
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto view_matrix view_matrix	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour		
+	}
+}
+
+fragment_program Character_HighLight_Simple_PS hlsl
+{
+	source Model_SimpleHighLight_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines HIGHLIGHT_SIMPLE_ENABLE=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Character_FlowLight_Transparent hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=0;FLOW_TEX_TYPE=1;USE_OUTLINE=0
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+	}
+}
+
+fragment_program Character_FlowLight_Mix hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=0;FLOW_TEX_TYPE=0
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+	}
+}
+
+fragment_program Character_FlowLight hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=0;FLOW_TEX_TYPE=2
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+	}
+}
+fragment_program Character_FlowLight_Uv hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=1;FLOW_TEX_TYPE=2
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+	}
+}
+
+fragment_program Character_FlowLight_Uv_Transparent hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=1;FLOW_TEX_TYPE=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+	}
+}
+
+fragment_program Character_FlowLight_Uv_Mix hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=1;FLOW_TEX_TYPE=0
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+	}
+}
+
+fragment_program Character_Skin_PSLit_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=2
+	default_params
+	{
+		param_named_auto derived_scene_colour derived_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Cloth_Silk_PSLit_PS hlsl
+{
+	source Model_Silk_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;SPECULAR_ANITROPHIC_ENABLE=1
+	default_params
+	{
+		param_named_auto derived_scene_colour derived_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+
+	}
+}
+
+fragment_program Pbr_PSLit_PS hlsl
+{
+	source Model_Pbr_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1
+	default_params
+	{
+		param_named_auto derived_scene_colour derived_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program PBRScene_PS hlsl
+{
+	source Model_Pbr_bd_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;IS_PBR_MODEL=1
+	default_params
+	{
+		param_named_auto derived_pbr_scene_colour derived_pbr_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		//param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named spec_params float4 255.0 255.0 255.0 1.0
+	}
+}
+
+fragment_program PBRScene_Emissive_PS hlsl
+{
+	source Model_Pbr_bd_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;IS_PBR_MODEL=1;USE_EMISSIVE=1
+	default_params
+	{
+		param_named_auto derived_pbr_scene_colour derived_pbr_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		//param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named spec_params float4 255.0 255.0 255.0 1.0
+	}
+}
+
+fragment_program PBRScene_Detail_PS hlsl
+{
+	source Model_Pbr_bd_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;IS_PBR_MODEL=1;IS_DETAIL=1
+	default_params
+	{
+		param_named_auto derived_pbr_scene_colour derived_pbr_scene_colour
+   		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		//param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		param_named D0UV_params float4 1.0 1.0 0.0 0.0
+		param_named D1UV_params float4 1.0 1.0 0.0 0.0
+		param_named DN_params float4 1.0 1.0 1.0 0.0
+		param_named spec_params float4 255.0 255.0 255.0 1.0
+	}
+}
+
+
+fragment_program PBRScene_More_Detail_PS hlsl
+{
+	source Model_Pbr_bd_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;IS_PBR_MODEL=1;IS_DETAIL=1;USE_16_TEXUNITS=1
+	default_params
+	{
+		param_named_auto derived_pbr_scene_colour derived_pbr_scene_colour
+   		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		//param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		param_named D0UV_params float4 1.0 1.0 0.0 0.0
+		param_named D1UV_params float4 1.0 1.0 0.0 0.0
+		param_named D2UV_params float4 1.0 1.0 0.0 0.0
+		param_named DN_params float4 1.0 1.0 1.0 10.0
+		param_named spec_params float4 255.0 255.0 255.0 1.0
+	}
+}
+
+fragment_program PBRChara_PS hlsl
+{
+	source Model_Pbr_chara_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;IS_PBR_MODEL=1
+	default_params
+	{
+		param_named_auto derived_pbr_scene_colour derived_pbr_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto surface_emissive_colour surface_emissive_colour
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		//param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+
+fragment_program PBRScene_Terrain_PS hlsl
+{
+	source Model_Pbr_Terrain_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;IS_PBR_MODEL=1
+	default_params
+	{
+		param_named_auto derived_pbr_scene_colour derived_pbr_scene_colour
+    param_named_auto surface_diffuse_colour surface_diffuse_colour
+		
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto imodel_userdata imodel_userdata
+		//param_named_auto isystem_userdata isystem_userdata
+		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		param_named L0UV_params float4 1.0 1.0 0.0 0.0
+		param_named L1UV_params float4 1.0 1.0 0.0 0.0
+		param_named L2UV_params float4 1.0 1.0 0.0 0.0
+		param_named LN_params float4 1.0 1.0 1.0 0.0
+		
+	}
+}
+
+fragment_program Base_Water_PS hlsl
+{
+	source Base_Water_ps.hlsl
+	entry_point main
+	target ps_3_0
+	default_params
+	{
+		param_named_auto viewport_size viewport_size
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+
+		param_named heightParams float2 1 0
+	}
+}
+
+fragment_program Base_Water_PS_DSIntZ hlsl
+{
+	source Base_Water_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines USE_DSINTZ=1
+	default_params
+	{
+		param_named_auto near_clip_distance near_clip_distance  
+		param_named_auto far_clip_distance far_clip_distance
+		param_named_auto viewport_size viewport_size
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+
+		param_named heightParams float2 1 0
+	}
+}
+
+fragment_program PBRScene_Water_PS hlsl
+{
+	source Model_Water_ps.hlsl
+	entry_point main
+	target ps_3_0
+	default_params
+	{
+		param_named_auto light_direction0 light_direction 0
+		param_named_auto light_diffuse_colour0 light_diffuse_colour	0
+		param_named_auto time time 0
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		// texRotateScale.x: texuv rotate texRotateScale.y: texuv scale
+		param_named texRotateScale float2 0 1
+		// tex depth factor: control the transparent of water egde	
+		param_named texDepthFactor float 20
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 0.0
+		param_named wavesSpeed float 1
+		param_named BigWavesScale float 0.59
+		param_named SmallWavesScale float 0.44
+		param_named BumpScale float2 0.6 0.6
+		param_named ReflectionAmount float 0.22
+		param_named TransparencyRatio float 0.11
+		param_named SunShinePow float 113
+		param_named SunMultiplier float 0.41
+		param_named FresnelBias float 0.1
+		param_named UVScale float2 1 1
+		
+	}
+}
+
+fragment_program PBRScene_Water_PBRTIME_PS hlsl
+{
+	source Model_Water_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines PBR_TIME=1
+	default_params
+	{
+		param_named_auto light_direction0 light_direction 0
+		param_named_auto light_diffuse_colour0 light_diffuse_colour	0
+		param_named_auto wind_control_params wind_control_params 0
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		// texRotateScale.x: texuv rotate texRotateScale.y: texuv scale
+		param_named texRotateScale float2 0 1
+		// tex depth factor: control the transparent of water egde	
+		param_named texDepthFactor float 20
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 0.0
+		param_named wavesSpeed float 1
+		param_named BigWavesScale float 0.59
+		param_named SmallWavesScale float 0.44
+		param_named BumpScale float2 0.6 0.6
+		param_named ReflectionAmount float 0.22
+		param_named TransparencyRatio float 0.11
+		param_named SunShinePow float 113
+		param_named SunMultiplier float 0.41
+		param_named FresnelBias float 0.1
+		param_named UVScale float2 1 1
+		
+	}
+}
+
+fragment_program PBRScene_Water_DSIntZ_PS hlsl
+{
+	source Model_Water_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines USE_DSINTZ=1
+	default_params
+	{
+		param_named_auto near_clip_distance near_clip_distance  
+		param_named_auto far_clip_distance far_clip_distance
+    
+		param_named_auto light_direction0 light_direction 0
+		param_named_auto light_diffuse_colour0 light_diffuse_colour	0
+		param_named_auto time time 0.0125
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		
+		// texRotateScale.x: texuv rotate texRotateScale.y: texuv scale
+		param_named texRotateScale float2 0 1
+		// tex depth factor: control the transparent of water egde	
+		param_named texDepthFactor float 20
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 0.0
+		param_named wavesSpeed float 1
+		param_named BigWavesScale float 0.59
+		param_named SmallWavesScale float 0.44
+		param_named BumpScale float2 0.6 0.6
+		param_named ReflectionAmount float 0.22
+		param_named TransparencyRatio float 0.11
+		param_named SunShinePow float 113
+		param_named SunMultiplier float 0.41
+		param_named FresnelBias float 0.1
+		param_named UVScale float2 1 1
+		
+	}
+}
+
+fragment_program PBRScene_Water_PBRTIME_DSIntZ_PS hlsl
+{
+	source Model_Water_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines USE_DSINTZ=1;PBR_TIME=1
+	default_params
+	{
+		param_named_auto near_clip_distance near_clip_distance  
+		param_named_auto far_clip_distance far_clip_distance
+    
+		param_named_auto light_direction0 light_direction 0
+		param_named_auto light_diffuse_colour0 light_diffuse_colour	0
+		param_named_auto wind_control_params wind_control_params 0
+
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		// texRotateScale.x: texuv rotate texRotateScale.y: texuv scale
+		param_named texRotateScale float2 0 1
+		// tex depth factor: control the transparent of water egde	
+		param_named texDepthFactor float 20
+		// FogColorDensity.w input range : [0--10000]
+		param_named FogColorDensity float4 1.0 1.0 1.0 0.0
+		param_named wavesSpeed float 1
+		param_named BigWavesScale float 0.59
+		param_named SmallWavesScale float 0.44
+		param_named BumpScale float2 0.6 0.6
+		param_named ReflectionAmount float 0.22
+		param_named TransparencyRatio float 0.11
+		param_named SunShinePow float 113
+		param_named SunMultiplier float 0.41
+		param_named FresnelBias float 0.1
+		param_named UVScale float2 1 1
+		
+	}
+}
+
+
+fragment_program Ls_Char_PS hlsl
+{
+	source Model_LSChar_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=1;USE_TANGENT=1;HIGHLIGHT_LSCHAR_ENABLE=1
+	default_params
+	{
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		//param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Ls_Char_N_PS hlsl
+{
+	source Model_LSChar_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;HIGHLIGHT_LSCHAR_ENABLE=2
+	default_params
+	{
+		param_named_auto actor_ambient_params actor_ambient_params
+		param_named_auto actor_lightone_params		actor_lightone_params
+		param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		//param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+		param_named_auto isystem_userdata isystem_userdata
+	}
+}
+fragment_program LSScene_HightLight_PS hlsl
+{
+	source Model_LSScene_ps.hlsl
+	entry_point main
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=1;USE_TANGENT=1;HIGHLIGHT_LSSCENE_ENABLE=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto view_matrix	view_matrix
+	}
+}
+fragment_program LSSceneN_HightLight_PS hlsl
+{
+	source Model_LSScene_ps.hlsl
+	entry_point mainN
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;HIGHLIGHT_LSSCENE_ENABLE=2;USE_EMISSIVE=0
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+
+		param_named_auto derived_scene_colour derived_scene_colour
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto view_matrix	view_matrix
+		
+		
+		param_named_auto isystem_userdata isystem_userdata
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+fragment_program LSSceneN_HightLight_Emissive_PS hlsl
+{
+	source Model_LSScene_ps.hlsl
+	entry_point mainN
+	target ps_3_0
+	column_major_matrices false
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;HIGHLIGHT_LSSCENE_ENABLE=2;USE_EMISSIVE=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto view_matrix	view_matrix
+		
+		param_named_auto isystem_userdata isystem_userdata
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+fragment_program LSHair_Sp_HightLight_PS hlsl
+{
+	source Model_Hair_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;HIGHLIGHT_HAIR_ENABLE=1;HAIR_Sp=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto surface_emissive_colour surface_emissive_colour
+		//param_named_auto derived_ambient_light_colour derived_ambient_light_colour
+		param_named_auto light_position_array[0] light_position_array 3
+		//param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour		
+		
+		//param_named_auto derived_scene_colour derived_scene_colour
+		//param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		//param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		//param_named_auto actor_ambient_params actor_ambient_params
+		//param_named_auto actor_lightone_params		actor_lightone_params
+		//param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		//param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+
+fragment_program LSHair_HightLight_PS hlsl
+{
+	source Model_Hair_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines LIGHT_CALC_TYPE=2;USE_TANGENT=1;HIGHLIGHT_HAIR_ENABLE=1;HAIR_Sp=0
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto surface_emissive_colour surface_emissive_colour
+		//param_named_auto derived_ambient_light_colour derived_ambient_light_colour
+		param_named_auto light_position_array[0] light_position_array 3
+		//param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour		
+		
+		//param_named_auto derived_scene_colour derived_scene_colour
+		//param_named_auto light_attenuation_array[0]	light_attenuation_array 3
+		//param_named_auto light_diffuse_colour_array[0] light_diffuse_colour_array 3
+		
+		//param_named_auto actor_ambient_params actor_ambient_params
+		//param_named_auto actor_lightone_params		actor_lightone_params
+		//param_named_auto actor_lighttwo_params		actor_lighttwo_params
+		
+		//param_named_auto imodel_userdata imodel_userdata
+	}
+}
+fragment_program Model_TwoTex_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		
+	}
+}
+
+fragment_program Model_TwoTex_Tex2_ColorX2_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1;BLEND_OP_1=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Model_TwoTex_Tex2_ColorX4_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1;BLEND_OP_1=2
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Model_TwoTex_Tex1_ColorX2_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1;BLEND_OP_0=1
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Model_TwoTex_Tex1_ColorX4_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1;BLEND_OP_0=2
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Model_TwoTex_Tex1_ColorX4_Tex2_ColorX4_PS hlsl
+{
+	source Model_2Tex_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines DIFFUSE_2_ENABLE=1;BLEND_OP_0=2;BLEND_OP_1=2
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+	}
+}
+
+fragment_program Model_Outline_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+
+	preprocessor_defines USE_OUTLINE=1;LIGHT_CALC_TYPE=0
+	
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named outlinePow float2 1000.0 6.0
+		param_named outlineColor float4 1.0 1.0 0.0 1.0
+	}
+}
+
+fragment_program Model_Outline_FlowLight_PS hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=0;FLOW_TEX_TYPE=1;USE_OUTLINE=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+		param_named outlinePow float2 4.0 0.5
+		param_named outlineColor float4 1.0 1.0 0.0 0.8
+	}
+}
+
+fragment_program Model_OutlineCtrl_FlowLight_PS hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=0;FLOW_TEX_TYPE=1;USE_OUTLINE=1;USE_OUTLINE_CTRL_TEX=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100		
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+		param_named outlinePow float2 4.0 0.5
+		param_named outlineColor float4 1.0 1.0 0.0 0.8
+	}
+}
+
+fragment_program Model_Outline_FlowLight_Dissolve_ByTime_PS hlsl
+{
+	source Model_Flow_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines FLOW_LIGHT_TYPE=0;FLOW_TEX_TYPE=1;USE_OUTLINE=1;DISSOLVE_EFFECT=4
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3
+		param_named_auto time_0_x time_0_x 100	
+		//param_named_auto time time
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named flowFactor float4 10.0 1.0 10.0 1.0
+		param_named outlinePow float2 4.0 0.5
+		param_named outlineColor float4 1.0 1.0 0.0 0.8
+
+		param_named dissolveClip   float  0.7
+		param_named dissolveColorA float4 0.0 0.0 1.0 1.0
+		param_named dissolveColorB float4 1.0 1.0 1.0 1.0
+		param_named dissolveParams float4 0.01, 0.01, 0.01, 0.01
+		param_named dissolveUVRepeat float2 3.0 3.0
+	}
+}
+
+fragment_program Model_Emissive_PS hlsl
+{
+	source Model_Emissive_ps.hlsl
+	entry_point main
+	target ps_3_0
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto imodel_userdata imodel_userdata
+	}
+}
+
+//∂Ò»Àπ»-”ƒ¡È
+fragment_program Phantom_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines Phantom_EFFECT=1
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named_auto time_0_x time_0_x 100
+		param_named baseColor float4 1.0 1.0 1.0 1.0
+		param_named outlineColor float4 1.0 1.0 1.0 1.0
+		param_named edgethickness float 1.0
+		param_named bottomTransparent float 0.0
+	}
+}
+fragment_program Ice_PS hlsl
+{
+	source Model_ps.hlsl
+	entry_point main
+	target ps_3_0
+	preprocessor_defines ICE_EFFECT=1;USE_TANGENT=1;
+	default_params
+	{
+		param_named_auto surface_diffuse_colour surface_diffuse_colour
+		param_named_auto surface_specular_colour surface_specular_colour
+		param_named_auto surface_shininess surface_shininess
+		param_named_auto light_position_array[0] light_position_array 3
+		param_named_auto light_specular_colour_array[0]	light_specular_colour_array 3	
+		param_named_auto fog_type fog_type
+		param_named_auto fog_params fog_params
+		param_named_auto fog_colour fog_colour
+		param_named mainTexImpact float 1.0
+	}
+}

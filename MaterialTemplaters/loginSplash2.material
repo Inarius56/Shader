@@ -1,0 +1,18 @@
+// xhz add
+material loginSplash2
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend alpha_blend
+			depth_check off
+
+			texture_unit
+			{
+				texture loginSplash2.jpg
+			}
+		}
+	}
+}

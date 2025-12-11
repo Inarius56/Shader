@@ -1,0 +1,416 @@
+
+
+//标准模板 固定管线
+material Mtl_Particle_Fix
+{      
+   technique
+   {
+    pass
+		{
+			ambient 0 0 0 1
+			diffuse 0 0 0 1
+			scene_blend add
+			depth_write off
+			fog_override true none    
+			texture_unit
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+		}
+   }
+}
+
+// 标准模板，scene add方式，也就是Translucent
+material Mtl_Particle
+{      
+   technique
+   {
+    pass
+		{
+			ambient 0 0 0 1
+			diffuse 0 0 0 1
+			scene_blend add
+			depth_write off
+			fog_override true none
+      fragment_program_ref Particle_PS
+      {
+      }
+			           
+			texture_unit
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+		}
+   }
+}
+material Mtl_Particle_Dissolve
+{      
+   technique
+   {
+	pass
+	{
+		ambient 0 0 0 1
+		diffuse 0 0 0 1
+		scene_blend add
+		depth_write off
+		fog_override true none
+		fragment_program_ref Particle_Dissolve_PS
+		{
+		}
+		texture_unit
+		{
+			texture <baseTex>.jpg
+			texture_alias <baseTexture>
+		}
+		texture_unit
+		{
+			texture <dissolveTex>.tga
+			texture_alias <dissolveTexure>
+		}
+	}
+   }
+}
+
+// 描边模板
+material Mtl_Particle_Outline
+{
+	technique
+	{	
+		pass Effect
+		{
+			scene_blend alpha_blend				
+			depth_write off
+
+			fragment_program_ref Model_Outline_PS
+      			{
+				param_named outlinePow float2 1000.0 6.0
+				param_named outlineColor float4 1.0 1.0 0.0 1.0
+     			}
+			texture_unit 
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+		}		
+   	 }
+}
+
+material Mtl_Particle_Transperant_VertexAlpha
+{      
+   technique
+   {
+    pass
+		{
+		    diffuse vertexcolour
+			scene_blend alpha_blend
+			depth_write off
+      fragment_program_ref Character_Skin_PS
+      {
+      }
+			           
+			texture_unit
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+		}
+   }
+}
+
+material Mtl_Particle_ColorX2
+{      
+   technique
+   {
+    pass
+		{
+			ambient 0 0 0 1
+			diffuse 0 0 0 1
+			scene_blend add
+			depth_write off
+			fog_override true none
+      fragment_program_ref Particle_ColorX2_PS
+      {
+      }       
+			texture_unit
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+		}
+   }
+}
+
+material Mtl_Particle_ColorX2_Clamp
+{      
+   technique
+   {
+    pass
+		{
+			ambient 0 0 0 1
+			diffuse 0 0 0 1
+			scene_blend add
+			depth_write off
+			fog_override true none
+      fragment_program_ref Particle_ColorX2_Clamp_PS
+      {
+      }       
+			texture_unit
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+		}
+   }
+}
+
+material Mtl_Particle_ColorX4
+{
+	 technique
+    {
+				pass
+				{
+						ambient 0 0 0 1
+						diffuse 0 0 0 1	
+						scene_blend add
+						depth_write off
+						fog_override true none
+			      fragment_program_ref Particle_ColorX4_PS
+			      {
+			      }       
+						texture_unit
+						{
+							texture <baseTex>.jpg
+							texture_alias <baseTexture>
+						}
+				}		
+    }
+}
+
+material Mtl_Particle_ColorX4_Clamp
+{
+	 technique
+    {
+				pass
+				{
+						ambient 0 0 0 1
+						diffuse 0 0 0 1	
+						scene_blend add
+						depth_write off
+						fog_override true none
+			      fragment_program_ref Particle_ColorX4_Clamp_PS
+			      {
+			      }       
+						texture_unit
+						{
+							texture <baseTex>.jpg
+							texture_alias <baseTexture>
+						}
+				}		
+    }
+}
+
+/////////////////////////////////////////////////////////////////
+// 用于两个纹理，colorX2 X4，是否打开光照等效果
+/////////////////////////////////////////////////////////////////
+
+// 两个纹理
+material Mtl_Particle_TwoTex
+{
+	technique
+	{
+		pass
+		{		
+			ambient 0 0 0 1
+			diffuse 0 0 0 1	
+			fog_override true none			
+			fragment_program_ref Particle_TwoTex_PS
+			{
+			}
+						
+			texture_unit
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+			texture_unit scrollTex
+			{
+				texture <scrollTex>.jpg
+				texture_alias <scrollTex>
+			}
+		}		
+	}
+}
+
+material Mtl_Particle_TwoTex_Dissolve
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0 0 0 1	
+			fog_override true none			
+			fragment_program_ref Particle_TwoTex_Dissolve_PS
+			{
+			}
+						
+			texture_unit
+			{
+				texture <baseTex>.jpg
+				texture_alias <baseTexture>
+			}
+			texture_unit scrollTex
+			{
+				texture <scrollTex>.jpg
+				texture_alias <scrollTex>
+			}
+			texture_unit
+			{
+				texture <dissolveTex>.tga
+				texture_alias <dissolveTexure>
+			}
+		}
+	}
+}
+
+// 两个纹理，第2个纹理colorX2
+material Mtl_Particle_TwoTex_Tex2_ColorX2
+{
+	 technique
+    {
+				pass
+				{
+						ambient 0 0 0 1
+						diffuse 0 0 0 1	
+						fog_override true none	
+						fragment_program_ref Particle_TwoTex_Tex2_ColorX2_PS
+		      	{
+		      	}
+					
+						texture_unit
+						{
+								texture <baseTex>.jpg
+								texture_alias <baseTexture>
+						}
+						texture_unit scrollTex
+            {
+								texture <scrollTex>.jpg
+								texture_alias <scrollTex>
+           }
+				}		
+    }
+}
+
+// 两个纹理，第2个纹理colorX4
+material Mtl_Particle_TwoTex_Tex2_ColorX4
+{
+	 technique
+    {
+				pass
+				{
+						ambient 0 0 0 1
+						diffuse 0 0 0 1	
+						fog_override true none
+						fragment_program_ref Particle_TwoTex_Tex2_ColorX4_PS
+		      	{
+		      	}
+					
+						texture_unit
+						{
+								texture <baseTex>.jpg
+								texture_alias <baseTexture>
+						}
+						texture_unit scrollTex
+            {
+								texture <scrollTex>.jpg
+								texture_alias <scrollTex>
+           }
+				}		
+    }
+}
+
+// 两个纹理，第1个纹理颜色X2
+material Mtl_Particle_TwoTex_Tex1_ColorX2
+{
+	 technique
+    {
+				pass
+				{
+						ambient 0 0 0 1
+						diffuse 0 0 0 1	
+						fog_override true none
+						fragment_program_ref Particle_TwoTex_Tex1_ColorX2_PS
+		      	{
+		      	}
+					
+						texture_unit
+						{
+								texture <baseTex>.jpg
+								texture_alias <baseTexture>
+						}
+						texture_unit scrollTex
+            {
+								texture <scrollTex>.jpg
+								texture_alias <scrollTex>
+           }
+				}		
+    }
+}
+
+// 两个纹理，第1个纹理颜色X4
+material Mtl_Particle_TwoTex_Tex1_ColorX4
+{
+	 technique
+    {
+				pass
+				{
+						ambient 0 0 0 1
+						diffuse 0 0 0 1	
+						fog_override true none
+						fragment_program_ref Particle_TwoTex_Tex1_ColorX4_PS
+		      	{
+		      	}
+					
+						texture_unit
+						{
+								texture <baseTex>.jpg
+								texture_alias <baseTexture>
+						}
+						texture_unit scrollTex
+            {
+								texture <scrollTex>.jpg
+								texture_alias <scrollTex>
+           }
+				}		
+    }
+}
+
+// 两个纹理，第1个纹理颜色X4 第2个纹理颜色X4
+material Mtl_Particle_TwoTex_Tex1_ColorX4_Tex2_ColorX4
+{
+	 technique
+    {
+				pass
+				{
+						ambient 0 0 0 1
+						diffuse 0 0 0 1	
+						fog_override true none
+						fragment_program_ref Particle_TwoTex_Tex1_ColorX4_Tex2_ColorX4_PS
+		      	{
+		      	}
+					
+						texture_unit
+						{
+								texture <baseTex>.jpg
+								texture_alias <baseTexture>
+						}
+						texture_unit scrollTex
+            {
+								texture <scrollTex>.jpg
+								texture_alias <scrollTex>
+           }
+				}		
+    }
+}
